@@ -1,0 +1,8 @@
+We are writing a GUI to display timer bars for buffs detected on a screen capture in Python.
+Each buff is an icon within an area of interest on the screen.
+The area of interest's coordinates are stored as a list of upper left corners and lower right corners and provided by the user.
+A PNG image of each buff will be stored in a folder by the user.
+The application will also use OCR to read the timer on the buff when it is found.
+The timer bars will be displayed with the image of the buff.
+The timer bar for a buff will start at 100% and deplete to 0% as the buff duration elapses.
+The timer bars will be sorted by duration.
