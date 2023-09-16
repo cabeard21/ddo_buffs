@@ -1,7 +1,3 @@
-Add some functionality to the program to help with troubleshooting.
+Modify the logging to save the log files in the same directory as the file doing the logging.
 
-Specifically, it would be good to see the screenshot taken by the buff detector, along with the area of interest defined by the coordinates.
-
-Add some logging functionality using Python's built-in logging module.
-
-Log the results of match template in the buff detector.
+Have the screenshot that is saved draw a red box around the area of interest and a green box around any matches found.
