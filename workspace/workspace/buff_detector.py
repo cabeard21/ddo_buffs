@@ -4,16 +4,15 @@ import os
 import pyautogui
 
 class BuffDetector:
-    def __init__(self, coordinates, buff_dir):
+    def __init__(self, coordinates):
         self.coordinates = coordinates
-        self.buff_dir = buff_dir
         self.templates = self.load_templates()
 
     def load_templates(self):
         templates = {}
-        for filename in os.listdir(self.buff_dir):
+        for filename in os.listdir('buffs'):
             if filename.endswith('.png'):
-                templates[filename] = cv2.imread(os.path.join(self.buff_dir, filename), 0)
+                templates[filename] = cv2.imread('buffs/' + filename, 0)
         return templates
 
     def detect(self):

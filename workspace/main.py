@@ -4,14 +4,18 @@ from buff_timer import BuffTimer
 from buff_bar import BuffBar
 from buff_sorter import BuffSorter
 from buff_ocr import BuffOCR
+from pathlib import Path
+
+BASE = Path(__file__).resolve().parent
 
 def main():
     # Load area of interest coordinates
-    with open('coordinates.json', 'r') as f:
+    with open(BASE / 'coordinates.json', 'r') as f:
         coordinates = json.load(f)
 
     # Initialize classes
-    buff_detector = BuffDetector(coordinates)
+    buff_dir = BASE / 'buffs'
+    buff_detector = BuffDetector(coordinates, buff_dir)
     buff_timer = BuffTimer()
     buff_bar = BuffBar()
     buff_sorter = BuffSorter()

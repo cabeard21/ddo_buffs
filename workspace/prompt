@@ -1,0 +1,1 @@
+Implement the capture_screen function in BuffDetector to periodically capture the screen. Update the detect function in BuffDetector to use the coordinates for where to search for the template.
