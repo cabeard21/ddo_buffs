@@ -11,7 +11,7 @@ class BuffDetector:
         self.templates = self.load_templates()
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler('buff_detector.log')
+        handler = logging.FileHandler(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'buff_detector.log'))
         handler.setLevel(logging.INFO)
         self.logger.addHandler(handler)
 
@@ -35,13 +35,20 @@ class BuffDetector:
             buffs.append((name, max_loc))
             self.logger.info(f"Match template result for {name}: {max_loc}")
 
+            # Draw a red box around the area of interest
+            cv2.rectangle(screen, (self.coordinates[0], self.coordinates[1]), (self.coordinates[2], self.coordinates[3]), (0, 0, 255), 2)
+
+            # Draw a green box around the match
+            cv2.rectangle(screen, max_loc, (max_loc[0] + template.shape[1], max_loc[1] + template.shape[0]), (0, 255, 0), 2)
+
+        # Save the screenshot with the boxes
+        cv2.imwrite('screenshot.png', screen)
+
         return buffs
 
     def capture_screen(self):
         # Capture the screen using pyautogui
         screenshot = pyautogui.screenshot()
-        # Save the screenshot for troubleshooting
-        screenshot.save('screenshot.png')
         # Convert the screenshot to grayscale
         screen = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
         return screen

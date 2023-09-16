@@ -44,6 +44,7 @@ archive
 
 # any log file
 *log.txt
+*.log
 todo
 scratchpad
 
@@ -79,3 +80,6 @@ docs/db/
 
 poetry.lock
 .aider*
+
+# ignore screenshots
+*.png
