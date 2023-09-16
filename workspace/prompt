@@ -1,3 +1,15 @@
-Change the screenshot to be saved in color instead of grayscale. This will make it easier to see the red and green boxes.
+Make changes to fix the following error:
 
-Do not modify the screenshot that is being searched for the template. It must remain grayscale.
+Traceback (most recent call last):
+  File "d:\Repos\gpt-engineer\projects\ddo\workspace\main.py", line 47, in <module>        
+    main()
+  File "d:\Repos\gpt-engineer\projects\ddo\workspace\main.py", line 32, in main
+    time = buff_ocr.read(buff)
+           ^^^^^^^^^^^^^^^^^^^
+  File "d:\Repos\gpt-engineer\projects\ddo\workspace\buff_ocr.py", line 7, in read
+    image = Image.fromarray(buff)
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "d:\Repos\gpt-engineer\venv\Lib\site-packages\PIL\Image.py", line 3059, in fromarray
+    arr = obj.__array_interface__
+          ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute '__array_interface__'

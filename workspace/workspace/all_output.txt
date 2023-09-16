@@ -1,12 +1,27 @@
-The request is to change the screenshot to be saved in color instead of grayscale. This will make it easier to see the red and green boxes. However, the screenshot that is being searched for the template must remain grayscale. 
+The error is occurring because the `buff` object being passed to the `read` method of the `BuffOCR` class is a tuple, but the `Image.fromarray` method from the `PIL` library expects a numpy array. The `buff` object is a tuple because it is the output of the `detect` method of the `BuffDetector` class, which returns a list of tuples.
 
-The code that needs to be modified is in the `buff_detector.py` file, specifically in the `detect` and `capture_screen` methods. 
+To fix this error, we need to modify the `read` method of the `BuffOCR` class to handle the tuple input correctly. We can do this by extracting the image data from the tuple before passing it to the `Image.fromarray` method.
 
-In the `capture_screen` method, the screenshot is captured and converted to grayscale. We need to modify this method to return both the grayscale and color versions of the screenshot. 
+Here is the corrected code:
 
-In the `detect` method, the grayscale screenshot is used for template matching and the color screenshot is used for drawing boxes and saving the screenshot. 
+buff_ocr.py
+```python
+import pytesseract
+from PIL import Image
 
-Here is the modified code:
+class BuffOCR:
+    def read(self, buff):
+        # Extract image data from tuple
+        _, image_data = buff
+
+        # Convert image data to image
+        image = Image.fromarray(image_data)
+
+        # Read timer
+        return int(pytesseract.image_to_string(image))
+```
+
+We also need to modify the `detect` method of the `BuffDetector` class to return the image data along with the name of the buff. Here is the corrected code:
 
 buff_detector.py
 ```python
@@ -17,22 +32,7 @@ import pyautogui
 import logging
 
 class BuffDetector:
-    def __init__(self, coordinates, buff_dir):
-        self.coordinates = coordinates
-        self.buff_dir = buff_dir
-        self.templates = self.load_templates()
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'buff_detector.log'))
-        handler.setLevel(logging.INFO)
-        self.logger.addHandler(handler)
-
-    def load_templates(self):
-        templates = {}
-        for filename in os.listdir(self.buff_dir):
-            if filename.endswith('.png'):
-                templates[filename] = cv2.imread(os.path.join(self.buff_dir, filename), 0)
-        return templates
+    # ... existing code ...
 
     def detect(self):
         # Capture screen
@@ -44,27 +44,16 @@ class BuffDetector:
             # Use the coordinates to search for the template
             result = cv2.matchTemplate(screen_gray[self.coordinates[1]:self.coordinates[3], self.coordinates[0]:self.coordinates[2]], template, cv2.TM_CCOEFF_NORMED)
             _, _, _, max_loc = cv2.minMaxLoc(result)
-            buffs.append((name, max_loc))
+            
+            # Extract image data
+            image_data = screen_gray[max_loc[1]:max_loc[1] + template.shape[0], max_loc[0]:max_loc[0] + template.shape[1]]
+
+            buffs.append((name, image_data))
             self.logger.info(f"Match template result for {name}: {max_loc}")
 
-            # Draw a red box around the area of interest
-            cv2.rectangle(screen_color, (self.coordinates[0], self.coordinates[1]), (self.coordinates[2], self.coordinates[3]), (0, 0, 255), 2)
-
-            # Draw a green box around the match
-            cv2.rectangle(screen_color, max_loc, (max_loc[0] + template.shape[1], max_loc[1] + template.shape[0]), (0, 255, 0), 2)
-
-        # Save the screenshot with the boxes
-        cv2.imwrite(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshot.png'), screen_color)
+            # ... existing code ...
 
         return buffs
-
-    def capture_screen(self):
-        # Capture the screen using pyautogui
-        screenshot = pyautogui.screenshot()
-        # Convert the screenshot to grayscale
-        screen_gray = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
-        # Convert the screenshot to color
-        screen_color = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
-        return screen_gray, screen_color
 ```
-This modification should fulfill the request. The screenshot that is being searched for the template remains grayscale, while the screenshot that is saved with the boxes is in color.
+
+With these changes, the `buff` object passed to the `read` method of the `BuffOCR` class will be a tuple containing the name of the buff and the image data, which can be correctly processed by the `Image.fromarray` method.
