@@ -33,5 +33,6 @@ class BuffDetector:
     def capture_screen(self):
         # Capture the screen using pyautogui
         screenshot = pyautogui.screenshot()
-        screen = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+        # Convert the screenshot to grayscale
+        screen = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
         return screen

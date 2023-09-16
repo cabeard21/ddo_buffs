@@ -1,7 +1,9 @@
-The request is to implement the capture_screen function in BuffDetector to periodically capture the screen and update the detect function in BuffDetector to use the coordinates for where to search for the template. 
+The error message indicates that the depth of the image should be either CV_8U or CV_32F and the type of the image should be the same as the template. Also, the image should be 2-dimensional. The error is occurring in the `detect` method of the `BuffDetector` class in the `buff_detector.py` file.
 
-To implement this, we need to use the Python's pyautogui library to capture the screen. We will also modify the detect function to use the coordinates provided when searching for the template.
+The `cv2.matchTemplate` function is used to match the template image with the source image. The source image is obtained from the `capture_screen` method which uses `pyautogui.screenshot` to capture the screen and then converts it to a BGR image using `cv2.cvtColor`. The template image is loaded using `cv2.imread` with a 0 as the second argument which loads the image in grayscale.
 
-Here are the updated files:
+The error can be fixed by ensuring that both the source image and the template image are in the same format. Since the template image is loaded in grayscale, the source image should also be converted to grayscale.
+
+Here is the modified `buff_detector.py` file:
 
 buff_detector.py

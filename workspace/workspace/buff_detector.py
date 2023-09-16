@@ -4,15 +4,16 @@ import os
 import pyautogui
 
 class BuffDetector:
-    def __init__(self, coordinates):
+    def __init__(self, coordinates, buff_dir):
         self.coordinates = coordinates
+        self.buff_dir = buff_dir
         self.templates = self.load_templates()
 
     def load_templates(self):
         templates = {}
-        for filename in os.listdir('buffs'):
+        for filename in os.listdir(self.buff_dir):
             if filename.endswith('.png'):
-                templates[filename] = cv2.imread('buffs/' + filename, 0)
+                templates[filename] = cv2.imread(os.path.join(self.buff_dir, filename), 0)
         return templates
 
     def detect(self):
@@ -32,5 +33,6 @@ class BuffDetector:
     def capture_screen(self):
         # Capture the screen using pyautogui
         screenshot = pyautogui.screenshot()
-        screen = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+        # Convert the screenshot to grayscale
+        screen = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
         return screen

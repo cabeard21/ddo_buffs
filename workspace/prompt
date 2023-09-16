@@ -1,1 +1,7 @@
-Implement the capture_screen function in BuffDetector to periodically capture the screen. Update the detect function in BuffDetector to use the coordinates for where to search for the template.
+Add some functionality to the program to help with troubleshooting.
+
+Specifically, it would be good to see the screenshot taken by the buff detector, along with the area of interest defined by the coordinates.
+
+Add some logging functionality using Python's built-in logging module.
+
+Log the results of match template in the buff detector.
