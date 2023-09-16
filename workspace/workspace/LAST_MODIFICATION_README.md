@@ -1,7 +1,11 @@
-The first task is to modify the logging to save the log files in the same directory as the file doing the logging. This can be achieved by modifying the `BuffDetector` class in the `buff_detector.py` file. We will use the `os` module to get the current directory and save the log file there.
+The request is to change the screenshot to be saved in color instead of grayscale. This will make it easier to see the red and green boxes. However, the screenshot that is being searched for the template must remain grayscale. 
 
-The second task is to draw a red box around the area of interest and a green box around any matches found. This can be achieved by modifying the `detect` method in the `BuffDetector` class. We will use the `cv2.rectangle` function to draw the boxes.
+The code that needs to be modified is in the `buff_detector.py` file, specifically in the `detect` and `capture_screen` methods. 
 
-Here are the modified files:
+In the `capture_screen` method, the screenshot is captured and converted to grayscale. We need to modify this method to return both the grayscale and color versions of the screenshot. 
+
+In the `detect` method, the grayscale screenshot is used for template matching and the color screenshot is used for drawing boxes and saving the screenshot. 
+
+Here is the modified code:
 
 buff_detector.py

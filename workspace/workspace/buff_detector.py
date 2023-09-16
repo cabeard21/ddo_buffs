@@ -24,25 +24,25 @@ class BuffDetector:
 
     def detect(self):
         # Capture screen
-        screen = self.capture_screen()
+        screen_gray, screen_color = self.capture_screen()
 
         # Detect buffs
         buffs = []
         for name, template in self.templates.items():
             # Use the coordinates to search for the template
-            result = cv2.matchTemplate(screen[self.coordinates[1]:self.coordinates[3], self.coordinates[0]:self.coordinates[2]], template, cv2.TM_CCOEFF_NORMED)
+            result = cv2.matchTemplate(screen_gray[self.coordinates[1]:self.coordinates[3], self.coordinates[0]:self.coordinates[2]], template, cv2.TM_CCOEFF_NORMED)
             _, _, _, max_loc = cv2.minMaxLoc(result)
             buffs.append((name, max_loc))
             self.logger.info(f"Match template result for {name}: {max_loc}")
 
             # Draw a red box around the area of interest
-            cv2.rectangle(screen, (self.coordinates[0], self.coordinates[1]), (self.coordinates[2], self.coordinates[3]), (0, 0, 255), 2)
+            cv2.rectangle(screen_color, (self.coordinates[0], self.coordinates[1]), (self.coordinates[2], self.coordinates[3]), (0, 0, 255), 2)
 
             # Draw a green box around the match
-            cv2.rectangle(screen, max_loc, (max_loc[0] + template.shape[1], max_loc[1] + template.shape[0]), (0, 255, 0), 2)
+            cv2.rectangle(screen_color, max_loc, (max_loc[0] + template.shape[1], max_loc[1] + template.shape[0]), (0, 255, 0), 2)
 
         # Save the screenshot with the boxes
-        cv2.imwrite('screenshot.png', screen)
+        cv2.imwrite(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshot.png'), screen_color)
 
         return buffs
 
@@ -50,5 +50,7 @@ class BuffDetector:
         # Capture the screen using pyautogui
         screenshot = pyautogui.screenshot()
         # Convert the screenshot to grayscale
-        screen = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
-        return screen
+        screen_gray = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
+        # Convert the screenshot to color
+        screen_color = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+        return screen_gray, screen_color

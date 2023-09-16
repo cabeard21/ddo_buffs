@@ -1,8 +1,12 @@
-The first task is to modify the logging to save the log files in the same directory as the file doing the logging. This can be achieved by modifying the `BuffDetector` class in the `buff_detector.py` file. We will use the `os` module to get the current directory and save the log file there.
+The request is to change the screenshot to be saved in color instead of grayscale. This will make it easier to see the red and green boxes. However, the screenshot that is being searched for the template must remain grayscale. 
 
-The second task is to draw a red box around the area of interest and a green box around any matches found. This can be achieved by modifying the `detect` method in the `BuffDetector` class. We will use the `cv2.rectangle` function to draw the boxes.
+The code that needs to be modified is in the `buff_detector.py` file, specifically in the `detect` and `capture_screen` methods. 
 
-Here are the modified files:
+In the `capture_screen` method, the screenshot is captured and converted to grayscale. We need to modify this method to return both the grayscale and color versions of the screenshot. 
+
+In the `detect` method, the grayscale screenshot is used for template matching and the color screenshot is used for drawing boxes and saving the screenshot. 
+
+Here is the modified code:
 
 buff_detector.py
 ```python
@@ -32,25 +36,25 @@ class BuffDetector:
 
     def detect(self):
         # Capture screen
-        screen = self.capture_screen()
+        screen_gray, screen_color = self.capture_screen()
 
         # Detect buffs
         buffs = []
         for name, template in self.templates.items():
             # Use the coordinates to search for the template
-            result = cv2.matchTemplate(screen[self.coordinates[1]:self.coordinates[3], self.coordinates[0]:self.coordinates[2]], template, cv2.TM_CCOEFF_NORMED)
+            result = cv2.matchTemplate(screen_gray[self.coordinates[1]:self.coordinates[3], self.coordinates[0]:self.coordinates[2]], template, cv2.TM_CCOEFF_NORMED)
             _, _, _, max_loc = cv2.minMaxLoc(result)
             buffs.append((name, max_loc))
             self.logger.info(f"Match template result for {name}: {max_loc}")
 
             # Draw a red box around the area of interest
-            cv2.rectangle(screen, (self.coordinates[0], self.coordinates[1]), (self.coordinates[2], self.coordinates[3]), (0, 0, 255), 2)
+            cv2.rectangle(screen_color, (self.coordinates[0], self.coordinates[1]), (self.coordinates[2], self.coordinates[3]), (0, 0, 255), 2)
 
             # Draw a green box around the match
-            cv2.rectangle(screen, max_loc, (max_loc[0] + template.shape[1], max_loc[1] + template.shape[0]), (0, 255, 0), 2)
+            cv2.rectangle(screen_color, max_loc, (max_loc[0] + template.shape[1], max_loc[1] + template.shape[0]), (0, 255, 0), 2)
 
         # Save the screenshot with the boxes
-        cv2.imwrite('screenshot.png', screen)
+        cv2.imwrite(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshot.png'), screen_color)
 
         return buffs
 
@@ -58,8 +62,9 @@ class BuffDetector:
         # Capture the screen using pyautogui
         screenshot = pyautogui.screenshot()
         # Convert the screenshot to grayscale
-        screen = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
-        return screen
+        screen_gray = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
+        # Convert the screenshot to color
+        screen_color = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+        return screen_gray, screen_color
 ```
-
-The other files (`buff_bar.py`, `buff_ocr.py`, `buff_sorter.py`, `buff_timer.py`, `main.py`) do not need to be modified for this task.
+This modification should fulfill the request. The screenshot that is being searched for the template remains grayscale, while the screenshot that is saved with the boxes is in color.
