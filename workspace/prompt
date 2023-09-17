@@ -1,15 +1,3 @@
-Make changes to fix the following error:
+Make BuffOCR's read method save the image to a file for debugging purposes.
 
-Traceback (most recent call last):
-  File "d:\Repos\gpt-engineer\projects\ddo\workspace\main.py", line 47, in <module>        
-    main()
-  File "d:\Repos\gpt-engineer\projects\ddo\workspace\main.py", line 32, in main
-    time = buff_ocr.read(buff)
-           ^^^^^^^^^^^^^^^^^^^
-  File "d:\Repos\gpt-engineer\projects\ddo\workspace\buff_ocr.py", line 7, in read
-    image = Image.fromarray(buff)
-            ^^^^^^^^^^^^^^^^^^^^^
-  File "d:\Repos\gpt-engineer\venv\Lib\site-packages\PIL\Image.py", line 3059, in fromarray
-    arr = obj.__array_interface__
-          ^^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'tuple' object has no attribute '__array_interface__'
+Make any other changes that will facillitate the ability to debug the matching and OCR portions of the program.

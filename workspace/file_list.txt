@@ -1,7 +1,6 @@
-D:/Repos/gpt-engineer/projects/ddo/workspace/buff_bar.py
-D:/Repos/gpt-engineer/projects/ddo/workspace/buff_detector.py
-D:/Repos/gpt-engineer/projects/ddo/workspace/buff_ocr.py
-D:/Repos/gpt-engineer/projects/ddo/workspace/buff_sorter.py
-D:/Repos/gpt-engineer/projects/ddo/workspace/buff_timer.py
-D:/Repos/gpt-engineer/projects/ddo/workspace/main.py
-D:/Repos/gpt-engineer/projects/ddo/workspace/requirements.txt
+D:/Repos/gpt-engineer/projects/ddo_buffs/workspace/buff_bar.py
+D:/Repos/gpt-engineer/projects/ddo_buffs/workspace/buff_detector.py
+D:/Repos/gpt-engineer/projects/ddo_buffs/workspace/buff_ocr.py
+D:/Repos/gpt-engineer/projects/ddo_buffs/workspace/buff_sorter.py
+D:/Repos/gpt-engineer/projects/ddo_buffs/workspace/buff_timer.py
+D:/Repos/gpt-engineer/projects/ddo_buffs/workspace/main.py
