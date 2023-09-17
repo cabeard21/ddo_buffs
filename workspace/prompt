@@ -1,3 +1,4 @@
-Make BuffOCR's read method save the image to a file for debugging purposes.
+Make changes to improve the OCR timer reading functionality:
 
-Make any other changes that will facillitate the ability to debug the matching and OCR portions of the program.
+The current test I am running finds a buff with 1:41 (in the format h:mm) in the middle of the captured icon.
+However the OCR reads it as '4\n'.
