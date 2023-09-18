@@ -16,7 +16,7 @@ class BuffDetector:
         self.logger.setLevel(logging.DEBUG)
         handler = logging.FileHandler(
             os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                         'buff_detector.log'))
+                         'application.log'))
         handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
