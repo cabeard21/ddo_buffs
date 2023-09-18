@@ -2,7 +2,7 @@ import logging
 import os
 from pathlib import Path
 
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QHBoxLayout, QLabel, QProgressBar, QWidget
 
@@ -31,6 +31,11 @@ class BuffBar(QWidget):
         self.layout.setContentsMargins(10, 0, 10,
                                        0)  # (left, top, right, bottom)
         self.setLayout(self.layout)
+
+        # Set properties for transparency and always-on-top
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool
+                            | Qt.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
 
     def update(self, buff, remaining):
         # If the buff bar already exists, update its value
