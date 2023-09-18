@@ -40,18 +40,19 @@ class BuffBar(QWidget):
     def update(self, buff, remaining):
         # If the buff bar already exists, update its value
         if buff in self.bars:
-            self.bars[buff].progressBar.setValue(round(remaining))
-            self.logger.debug(
-                f'Updated buff bar for {buff} with remaining time {remaining}')
+            if remaining > 0:
+                self.bars[buff].progressBar.setValue(round(remaining))
+                self.logger.debug(f'Updated buff bar for {buff} with '
+                                  f'remaining time {remaining}')
         else:
-            # Create a new buff bar
-            buffBar = TimerWidget(buff)
-            buffBar.progressBar.setValue(round(remaining))
-            self.bars[buff] = buffBar
-            self.layout.addWidget(buffBar)
-            self.logger.debug(
-                f'Created new buff bar for {buff} with remaining \
-                    time {remaining}')
+            # Create a new buff bar if remaining time is greater than 0
+            if remaining > 0:
+                buffBar = TimerWidget(buff, self.logger)
+                buffBar.progressBar.setValue(round(remaining))
+                self.bars[buff] = buffBar
+                self.layout.addWidget(buffBar)
+                self.logger.debug(f'Created new buff bar for {buff} with '
+                                  f'remaining time {remaining}')
 
     def display(self):
         self.show()
