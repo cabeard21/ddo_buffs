@@ -1,73 +1,74 @@
-The issue seems to be in the `read` function of the `BuffOCR` class in the `buff_ocr.py` file. The function is trying to match the preprocessed buff image with the templates and if the match value is greater than 0.95, it considers it a match. However, the threshold of 0.95 might be too high causing some matches to be missed. 
+The error message "TypeError: unhashable type: 'numpy.ndarray'" indicates that a numpy array is being used as a key in a dictionary. In Python, only immutable types can be used as dictionary keys. The numpy array is mutable and hence cannot be used as a key.
 
-We can try to lower the threshold to see if it improves the matching. Also, we can add a debug log to print the max_val for each template matching to help us understand the matching values better.
+Looking at the code, the error is likely occurring in the `buff_timer.update(buff, time)` line in the `main.py` file. Here, `buff` is a tuple containing a string and a numpy array. The numpy array in this tuple is causing the error.
 
-Here is the modified `buff_ocr.py` file:
+To fix this, we can modify the `buff` to only include the string (buff name) and not the numpy array (image data). This can be done in the `detect` method of the `BuffDetector` class in the `buff_detector.py` file. Instead of returning a tuple of the buff name and image data, we can just return the buff name.
 
-buff_ocr.py
+Here are the modified files:
+
+buff_detector.py
 ```python
-import pytesseract
-from PIL import Image
-import logging
-import os
 import cv2
 import numpy as np
+import os
+import pyautogui
+import logging
 
-class BuffOCR:
-    def __init__(self, template_dir):
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'buff_ocr.log'))
-        handler.setLevel(logging.INFO)
-        self.logger.addHandler(handler)
-        self.templates = self.load_templates(template_dir)
+class BuffDetector:
+    # ... rest of the code ...
 
-    def load_templates(self, template_dir):
-        templates = {}
-        for filename in os.listdir(template_dir):
-            if filename.endswith('.png'):
-                templates[filename] = cv2.imread(os.path.join(template_dir, filename), cv2.IMREAD_GRAYSCALE)
-        return templates
+    def detect(self):
+        # ... rest of the code ...
 
-    def preprocess_image(self, image):
-        # Check if the image is already in grayscale
-        if len(image.shape) == 2:
-            gray_image = image
-        else:
-            # Convert the image to grayscale
-            gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        buffs = []
+        for name, template in self.templates.items():
+            # ... rest of the code ...
 
-        # Apply adaptive thresholding to the grayscale image
-        thresholded_image = cv2.adaptiveThreshold(gray_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+            # Only append the buff name, not the image data
+            buffs.append(name)
+            self.logger.info(f"Match template result for {name}: {max_loc}")
 
-        # Resize the image
-        resized_image = cv2.resize(thresholded_image, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+            # ... rest of the code ...
 
-        return resized_image
+        return buffs
 
-    def read(self, buff):
-        # Extract image data from tuple
-        _, image_data = buff
-
-        # Preprocess the image
-        preprocessed_image = self.preprocess_image(image_data)
-
-        # Save the image for debugging
-        cv2.imwrite(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'buff_image.png'), preprocessed_image)
-
-        # Read timer
-        try:
-            timer = ""
-            for name, template in self.templates.items():
-                result = cv2.matchTemplate(preprocessed_image, template, cv2.TM_CCOEFF_NORMED)
-                _, max_val, _, max_loc = cv2.minMaxLoc(result)
-                self.logger.debug(f"Template matching value for {name}: {max_val}")
-                if max_val > 0.8:  # Lowered the threshold
-                    timer += name.replace('.png', '').replace('colon', ':')
-            self.logger.info(f"Template matching result for {buff[0]}: {timer}")
-            return timer
-        except Exception as e:
-            self.logger.error(f"Error reading timer for {buff[0]}: {e}")
-            return 0
+    # ... rest of the code ...
 ```
-This change should help in improving the matching of the digits to the preprocessed buff image.
+
+main.py
+```python
+import json
+from buff_detector import BuffDetector
+from buff_timer import BuffTimer
+from buff_bar import BuffBar
+from buff_sorter import BuffSorter
+from buff_ocr import BuffOCR
+from pathlib import Path
+
+BASE = Path(__file__).resolve().parent
+
+def main():
+    # ... rest of the code ...
+
+    while True:
+        # Detect buffs
+        buffs = buff_detector.detect()
+
+        # Update timers and bars
+        for buff_name in buffs:
+            # Read timer
+            time = buff_ocr.read(buff_name)
+
+            # Update timer
+            buff_timer.update(buff_name, time)
+
+            # Update bar
+            buff_bar.update(buff_name, buff_timer.get_remaining(buff_name))
+
+        # ... rest of the code ...
+
+if __name__ == "__main__":
+    main()
+```
+
+This should fix the TypeError. The `buff` now only contains the buff name (a string), which is hashable and can be used as a dictionary key.

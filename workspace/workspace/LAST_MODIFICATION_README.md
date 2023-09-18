@@ -1,7 +1,9 @@
-The issue seems to be in the `read` function of the `BuffOCR` class in the `buff_ocr.py` file. The function is trying to match the preprocessed buff image with the templates and if the match value is greater than 0.95, it considers it a match. However, the threshold of 0.95 might be too high causing some matches to be missed. 
+The error message "TypeError: unhashable type: 'numpy.ndarray'" indicates that a numpy array is being used as a key in a dictionary. In Python, only immutable types can be used as dictionary keys. The numpy array is mutable and hence cannot be used as a key.
 
-We can try to lower the threshold to see if it improves the matching. Also, we can add a debug log to print the max_val for each template matching to help us understand the matching values better.
+Looking at the code, the error is likely occurring in the `buff_timer.update(buff, time)` line in the `main.py` file. Here, `buff` is a tuple containing a string and a numpy array. The numpy array in this tuple is causing the error.
 
-Here is the modified `buff_ocr.py` file:
+To fix this, we can modify the `buff` to only include the string (buff name) and not the numpy array (image data). This can be done in the `detect` method of the `BuffDetector` class in the `buff_detector.py` file. Instead of returning a tuple of the buff name and image data, we can just return the buff name.
 
-buff_ocr.py
+Here are the modified files:
+
+buff_detector.py

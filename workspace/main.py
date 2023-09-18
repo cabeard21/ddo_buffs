@@ -28,9 +28,9 @@ def main():
         buffs = buff_detector.detect()
 
         # Update timers and bars
-        for buff in buffs:
+        for buff, image_data in buffs:
             # Read timer
-            time = buff_ocr.read(buff)
+            time = buff_ocr.read(image_data)
 
             # Update timer
             buff_timer.update(buff, time)

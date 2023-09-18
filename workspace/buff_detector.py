@@ -5,7 +5,7 @@ import pyautogui
 import logging
 
 class BuffDetector:
-    def __init__(self, coordinates, buff_dir):
+    def __init__(self, coordinates, buff_dir, threshold=0.8):
         self.coordinates = coordinates
         self.buff_dir = buff_dir
         self.templates = self.load_templates()
@@ -14,6 +14,7 @@ class BuffDetector:
         handler = logging.FileHandler(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'buff_detector.log'))
         handler.setLevel(logging.INFO)
         self.logger.addHandler(handler)
+        self.threshold = threshold
 
     def load_templates(self):
         templates = {}
@@ -31,7 +32,9 @@ class BuffDetector:
         for name, template in self.templates.items():
             # Use the coordinates to search for the template
             result = cv2.matchTemplate(screen_gray[self.coordinates[1]:self.coordinates[3], self.coordinates[0]:self.coordinates[2]], template, cv2.TM_CCOEFF_NORMED)
-            _, _, _, max_loc = cv2.minMaxLoc(result)
+            _, max_val, _, max_loc = cv2.minMaxLoc(result)
+            if max_val < self.threshold:
+                continue
 
             # Extract image data
             image_data = screen_gray[max_loc[1]:max_loc[1] + template.shape[0], max_loc[0]:max_loc[0] + template.shape[1]]

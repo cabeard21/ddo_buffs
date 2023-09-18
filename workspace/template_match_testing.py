@@ -4,10 +4,10 @@ from pathlib import Path
 
 BASE = Path(__file__).resolve().parent
 
-img = cv.imread(str(BASE / 'buffs/divine_favor.png'), cv.IMREAD_GRAYSCALE)
+img = cv.imread(str(BASE / 'Capture.png'), cv.IMREAD_GRAYSCALE)
 assert img is not None, "file could not be read, check with os.path.exists()"
 img2 = img.copy()
-template = cv.imread(str(BASE / 'templates/5.png'), cv.IMREAD_GRAYSCALE)
+template = cv.imread(str(BASE / 'buffs/divine_favor.png'), cv.IMREAD_GRAYSCALE)
 assert template is not None, "file could not be read, check with os.path.exists()"
 w, h = template.shape[::-1]
 
