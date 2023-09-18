@@ -84,3 +84,8 @@ poetry.lock
 # ignore screenshots
 *.png
 workspace/temp.py
+workspace/workspace/*
+workspace/memory/*
+workspace/all_output.txt
+workspace/file_list.txt
+workspace/prompt
