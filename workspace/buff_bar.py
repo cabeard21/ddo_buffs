@@ -28,8 +28,8 @@ class BuffBar(QWidget):
 
     def initUI(self):
         self.layout = QHBoxLayout()
-        self.layout.setContentsMargins(10, 0, 10,
-                                       0)  # (left, top, right, bottom)
+        # (left, top, right, bottom)
+        self.layout.setContentsMargins(10, 0, 10, 0)
         self.setLayout(self.layout)
 
         # Set properties for transparency and always-on-top
@@ -72,7 +72,7 @@ class TimerWidget(QWidget):
 
         # Icon for the timer
         self.iconLabel = QLabel(self)
-        icon_path = str(BASE / f'buffs/{buff}.png')
+        icon_path = str(BASE / f'buffs/{buff}')
         if os.path.exists(icon_path):
             self.iconLabel.setPixmap(QIcon(icon_path).pixmap(22, 22))
         else:
