@@ -1,3 +1,3 @@
 class BuffSorter:
     def sort(self, bars):
-        return sorted(bars.items(), key=lambda x: x[1].size[0])
+        return sorted(bars.items(), key=lambda x: x[1].progressBar.value(), reverse=True)
