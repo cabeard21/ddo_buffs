@@ -39,7 +39,7 @@ class MainApp(QWidget):
         # Update timers and bars
         for buff, image_data in buffs:
             # Read timer
-            time = self.buff_ocr.read(image_data)
+            time = self.buff_ocr.read(buff, image_data)
 
             # Update timer
             self.buff_timer.update(buff, time)

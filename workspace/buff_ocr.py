@@ -29,7 +29,7 @@ class BuffOCR:
                     os.path.join(template_dir, filename), cv2.IMREAD_GRAYSCALE)
         return templates
 
-    def read(self, image_data):
+    def read(self, buff, image_data):
         # Save the image for debugging
         cv2.imwrite(
             os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -55,9 +55,15 @@ class BuffOCR:
         detected_time = ''.join([item[0] for item in sorted_all_positions])
 
         # Convert the detected time to seconds
-        minutes, seconds = map(int, detected_time.split('colon'))
-        total_seconds = minutes * 60 + seconds
-        self.logger.debug(
-            f'Detected time: {detected_time} ({total_seconds} seconds)')
+        try:
+            minutes, seconds = map(int, detected_time.split('colon'))
+            total_seconds = minutes * 60 + seconds
+        except ValueError:
+            self.logger.error(f'Error converting detected time to seconds '
+                              f'for buff {buff}: {detected_time}')
+            total_seconds = 0
+
+        self.logger.debug(f'Detected time for buff {buff}: {detected_time} '
+                          f'({total_seconds} seconds)')
 
         return total_seconds
