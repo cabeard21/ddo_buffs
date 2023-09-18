@@ -54,8 +54,8 @@ class BuffDetector:
 
             buffs.append((name, image_data))
             self.logger.debug(
-                f"Match template result for {name}: {max_loc} with \
-                    value {max_val}")
+                f"Match template result for {name}: {max_loc} with "
+                f"value {max_val}")
 
             # Draw a red box around the area of interest
             cv2.rectangle(screen_color,
