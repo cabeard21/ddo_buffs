@@ -64,7 +64,7 @@ class MainApp(QWidget):
         # Initialize classes
         buff_dir = BASE / 'buffs'
         template_dir = BASE / 'templates'
-        self.buff_detector = BuffDetector(coordinates, buff_dir)
+        self.buff_detector = BuffDetector(coordinates, buff_dir, 0.7)
         self.buff_timer = BuffTimer()
         self.buff_sorter = BuffSorter()
         self.buff_ocr = BuffOCR(template_dir)
