@@ -59,8 +59,9 @@ class BuffBar(QWidget):
 
 class TimerWidget(QWidget):
 
-    def __init__(self, buff):
+    def __init__(self, buff, logger):
         super().__init__()
+        self.logger = logger
         self.initUI(buff)
 
     def initUI(self, buff):
@@ -70,8 +71,11 @@ class TimerWidget(QWidget):
 
         # Icon for the timer
         self.iconLabel = QLabel(self)
-        self.iconLabel.setPixmap(
-            QIcon(str(BASE / f'buffs/{buff}.png')).pixmap(22, 22))
+        icon_path = str(BASE / f'buffs/{buff}.png')
+        if os.path.exists(icon_path):
+            self.iconLabel.setPixmap(QIcon(icon_path).pixmap(22, 22))
+        else:
+            self.logger.error(f'Icon not found: {icon_path}')
         self.layout.addWidget(self.iconLabel)
 
         # Progress bar for the timer
