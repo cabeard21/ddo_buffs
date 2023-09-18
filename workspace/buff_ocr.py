@@ -1,14 +1,18 @@
 import logging
 import os
+
 import cv2
 import numpy as np
+
 
 class BuffOCR:
     def __init__(self, template_dir, threshold=0.8):
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
+        self.logger.setLevel(logging.DEBUG)
         handler = logging.FileHandler(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'buff_ocr.log'))
-        handler.setLevel(logging.INFO)
+        handler.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
         self.logger.addHandler(handler)
         self.templates = self.load_templates(template_dir)
         self.threshold = threshold
@@ -41,5 +45,6 @@ class BuffOCR:
         # Convert the detected time to seconds
         minutes, seconds = map(int, detected_time.split('colon'))
         total_seconds = minutes * 60 + seconds
+        self.logger.debug(f'Detected time: {detected_time} ({total_seconds} seconds)')
 
         return total_seconds

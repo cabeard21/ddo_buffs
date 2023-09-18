@@ -1,8 +1,10 @@
+import logging
+import os
+
 import cv2
 import numpy as np
-import os
 import pyautogui
-import logging
+
 
 class BuffDetector:
     def __init__(self, coordinates, buff_dir, threshold=0.8):
@@ -10,9 +12,11 @@ class BuffDetector:
         self.buff_dir = buff_dir
         self.templates = self.load_templates()
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
+        self.logger.setLevel(logging.DEBUG)
         handler = logging.FileHandler(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'buff_detector.log'))
-        handler.setLevel(logging.INFO)
+        handler.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
         self.logger.addHandler(handler)
         self.threshold = threshold
 
@@ -40,7 +44,7 @@ class BuffDetector:
             image_data = screen_gray[max_loc[1]:max_loc[1] + template.shape[0], max_loc[0]:max_loc[0] + template.shape[1]]
 
             buffs.append((name, image_data))
-            self.logger.info(f"Match template result for {name}: {max_loc}")
+            self.logger.debug(f"Match template result for {name}: {max_loc} with value {max_val}")
 
             # Draw a red box around the area of interest
             cv2.rectangle(screen_color, (self.coordinates[0], self.coordinates[1]), (self.coordinates[2], self.coordinates[3]), (0, 0, 255), 2)
