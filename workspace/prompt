@@ -1,4 +1,2 @@
-Make changes to improve the OCR timer reading functionality:
-
-The current test I am running finds a buff with 1:41 (in the format h:mm) in the middle of the captured icon.
-However the OCR reads it as '4\n'.
+The read function in BuffOCR is not correctly matching the digits to the preprocessed buff image.
+I am not sure if it's matching or just not getting a high enough value to be considered a match.

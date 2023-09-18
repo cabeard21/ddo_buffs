@@ -1,6 +1,6 @@
-The issue seems to be with the OCR reading the time from the buff icon. The OCR might be having trouble reading the time due to the preprocessing steps applied to the image. The current preprocessing steps include converting the image to grayscale, applying adaptive thresholding, dilating, eroding, and resizing the image. These steps might be causing the time text to be lost or distorted, resulting in the OCR not being able to read it.
+The issue seems to be in the `read` function of the `BuffOCR` class in the `buff_ocr.py` file. The function is trying to match the preprocessed buff image with the templates and if the match value is greater than 0.95, it considers it a match. However, the threshold of 0.95 might be too high causing some matches to be missed. 
 
-To fix this issue, we can modify the preprocessing steps in the `BuffOCR` class in the `buff_ocr.py` file. We can try removing the dilation and erosion steps, as these might be causing the text to be lost. We can also try different configurations for the adaptive thresholding and resizing steps.
+We can try to lower the threshold to see if it improves the matching. Also, we can add a debug log to print the max_val for each template matching to help us understand the matching values better.
 
 Here is the modified `buff_ocr.py` file:
 
