@@ -2,7 +2,7 @@ import logging
 import os
 from pathlib import Path
 
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QHBoxLayout, QLabel, QProgressBar, QVBoxLayout,
                              QWidget)
@@ -20,7 +20,7 @@ class BuffBar(QWidget):
         self.logger.setLevel(logging.DEBUG)
         handler = logging.FileHandler(
             os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                         'buff_bar.log'))
+                         'application.log'))
         handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -56,41 +56,58 @@ class BuffBar(QWidget):
         self.mpos = None
 
     def update(self, buff, remaining):
-        # If the buff bar already exists, update its value
+        # If the buff bar already exists
         if buff in self.bars:
-            if remaining > 0:
-                self.bars[buff].progressBar.setValue(round(remaining))
-                self.logger.debug(f'Updated buff bar for {buff} with '
-                                  f'remaining time {remaining}')
+            # If the buff has expired, reset it
+            if self.bars[buff].expired:
+                self.bars[buff].reset(remaining)
+                self.logger.debug(
+                    f'BuffBar reset buff bar for {buff} with remaining '
+                    f'time {remaining}')
+            # Otherwise, just update its value
+            else:
+                self.bars[buff].progressBar.setValue(int(remaining))
+                self.bars[buff].progressBar.setFormat(f'{round(remaining)} s')
         else:
             # Create a new buff bar if remaining time is greater than 0
             if remaining > 0:
-                buffBar = TimerWidget(buff, self.logger)
-                buffBar.progressBar.setValue(round(remaining))
+                buffBar = TimerWidget(buff, remaining, self.logger)
                 self.bars[buff] = buffBar
                 self.layout.addWidget(buffBar)
-                self.logger.debug(f'Created new buff bar for {buff} with '
-                                  f'remaining time {remaining}')
+                self.logger.debug(
+                    f'Created new buff bar for {buff} with remaining '
+                    f'time {remaining}')
+
+    def removeBuffBar(self, buff):
+        if buff in self.bars:
+            self.layout.removeWidget(self.bars[buff])
+            self.bars[buff].deleteLater()
+            del self.bars[buff]
+            self.logger.debug(f'Removed buff bar for {buff}')
 
     def display(self):
         self.show()
 
 
 class TimerWidget(QWidget):
+    buffExpired = pyqtSignal(str)
 
-    def __init__(self, buff, logger):
+    def __init__(self, buff, remaining, logger):
         super().__init__()
         self.logger = logger
-        self.initUI(buff)
+        self.remaining = remaining
+        self.buff = buff
+        self.expired = False
+        self.initUI()
 
-    def initUI(self, buff):
+    def initUI(self):
         self.layout = QHBoxLayout()
         # (left, top, right, bottom)
         self.layout.setContentsMargins(10, 0, 10, 0)
 
         # Icon for the timer
         self.iconLabel = QLabel(self)
-        icon_path = str(BASE / f'buffs/{buff}')
+        icon_path = str(BASE / f'buffs/{self.buff}')
         if os.path.exists(icon_path):
             self.iconLabel.setPixmap(QIcon(icon_path).pixmap(22, 22))
         else:
@@ -99,8 +116,13 @@ class TimerWidget(QWidget):
 
         # Progress bar for the timer
         self.progressBar = QProgressBar(self)
-        self.progressBar.setValue(100)
-        self.progressBar.setTextVisible(False)  # Remove timer text
+        self.progressBar.setMaximum(int(self.remaining))
+        self.progressBar.setValue(int(self.remaining))
+        self.progressBar.setFormat(f'{round(self.remaining)} s')
+        self.progressBar.setTextVisible(True)  # Show timer text
+        self.progressBar.setAlignment(Qt.AlignCenter)
+        self.progressBar.setStyleSheet(
+            "QProgressBar::chunk { background-color: #00FF00; }")
         self.layout.addWidget(self.progressBar)
 
         self.setLayout(self.layout)
@@ -114,5 +136,27 @@ class TimerWidget(QWidget):
         currentValue = self.progressBar.value()
         if currentValue > 0:
             self.progressBar.setValue(currentValue - 1)
+            self.progressBar.setFormat(f'{round(currentValue - 1)} s')
         else:
+            self.progressBar.setValue(
+                self.progressBar.maximum())  # Fill up the bar
+            self.progressBar.setStyleSheet(
+                "QProgressBar::chunk { background-color: red }")
+            self.progressBar.setFormat('')  # Show no text
+            self.logger.debug(f'Buff {self.buff} has expired')
             self.timer.stop()
+            self.expired = True
+            self.buffExpired.emit(self.buff)
+
+    def reset(self, remaining):
+        self.expired = False
+        self.remaining = remaining
+        self.progressBar.setValue(int(self.remaining))
+        self.progressBar.setFormat(f'{round(self.remaining)} s')
+        self.progressBar.setStyleSheet(
+            "QProgressBar::chunk { background-color: #00FF00; }")
+        if not self.timer.isActive():
+            self.timer.start(1000)
+        self.logger.debug(
+            f'TimerWidget reset buff bar for {self.buff} with remaining '
+            f'time {remaining}')
