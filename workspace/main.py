@@ -12,7 +12,9 @@ from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget
 
 BASE = Path(__file__).resolve().parent
 
+
 class MainApp(QWidget):
+
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -22,8 +24,10 @@ class MainApp(QWidget):
         self.layout.setSpacing(5)  # Adjust this value as needed
         self.setLayout(self.layout)
 
-        # Remove title bar, set background transparent, and make window always on top
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint)
+        # Remove title bar, set background transparent,
+        # and make window always on top
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool
+                            | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.show()
@@ -73,10 +77,9 @@ class MainApp(QWidget):
         self.timer.timeout.connect(self.update_bars)
         self.timer.start(1000)  # Update every second
 
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     ex = MainApp()
     ex.main()
     sys.exit(app.exec_())
-
-

@@ -1,6 +1,8 @@
 import time
 
+
 class BuffTimer:
+
     def __init__(self):
         self.timers = {}
 
