@@ -4,7 +4,8 @@ from pathlib import Path
 
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QHBoxLayout, QLabel, QProgressBar, QWidget
+from PyQt5.QtWidgets import (QHBoxLayout, QLabel, QProgressBar, QVBoxLayout,
+                             QWidget)
 
 BASE = Path(__file__).resolve().parent
 
@@ -13,6 +14,7 @@ class BuffBar(QWidget):
 
     def __init__(self):
         super().__init__()
+        self.mpos = None
         self.bars = {}
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
@@ -27,7 +29,7 @@ class BuffBar(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.layout = QHBoxLayout()
+        self.layout = QVBoxLayout()
         # (left, top, right, bottom)
         self.layout.setContentsMargins(10, 0, 10, 0)
         self.setLayout(self.layout)
@@ -36,6 +38,22 @@ class BuffBar(QWidget):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool
                             | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
+
+        # Added to handle mouse press event
+    def mousePressEvent(self, event):
+        self.mpos = event.pos()
+
+    # Added to handle mouse move event
+    def mouseMoveEvent(self, event):
+        if self.mpos:
+            diff = event.pos() - self.mpos
+            new_pos = self.pos() + diff
+            self.move(new_pos)
+            self.mpos = event.pos()
+
+    # Added to handle mouse release event
+    def mouseReleaseEvent(self, event):
+        self.mpos = None
 
     def update(self, buff, remaining):
         # If the buff bar already exists, update its value
