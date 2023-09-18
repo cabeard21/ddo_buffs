@@ -18,47 +18,36 @@ class BuffOCR:
         templates = {}
         for filename in os.listdir(template_dir):
             if filename.endswith('.png'):
-                templates[filename] = cv2.imread(os.path.join(template_dir, filename), cv2.IMREAD_GRAYSCALE)
+                templates[filename.replace('.png', '')] = cv2.imread(os.path.join(template_dir, filename), cv2.IMREAD_GRAYSCALE)
         return templates
-
-    def preprocess_image(self, image):
-        # Check if the image is already in grayscale
-        if len(image.shape) == 2:
-            gray_image = image
-        else:
-            # Convert the image to grayscale
-            gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-        # Apply adaptive thresholding to the grayscale image
-        thresholded_image = cv2.adaptiveThreshold(gray_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-
-        # Resize the image
-        resized_image = cv2.resize(thresholded_image, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-
-        return resized_image
 
     def read(self, buff):
         # Extract image data from tuple
         _, image_data = buff
 
-        # Preprocess the image
-        preprocessed_image = image_data
-        # preprocessed_image = self.preprocess_image(image_data)
-
         # Save the image for debugging
-        cv2.imwrite(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'buff_image.png'), preprocessed_image)
+        cv2.imwrite(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'buff_image.png'), image_data)
 
         # Read timer
-        try:
-            timer = ""
-            for name, template in self.templates.items():
-                result = cv2.matchTemplate(preprocessed_image, template, cv2.TM_CCOEFF_NORMED)
-                _, max_val, _, max_loc = cv2.minMaxLoc(result)
-                self.logger.debug(f"Template matching value for {name}: {max_val}")
-                if max_val > 0.8:  # Lowered the threshold
-                    timer += name.replace('.png', '').replace('colon', ':')
-            self.logger.info(f"Template matching result for {buff[0]}: {timer}")
-            return timer
-        except Exception as e:
-            self.logger.error(f"Error reading timer for {buff[0]}: {e}")
-            return 0
+        # Threshold for template matching
+        threshold = 0.8
+
+        # Detect all matched positions for each template
+        all_detected_positions = {}
+        for key, template in self.templates.items():
+            result = cv2.matchTemplate(image_data, template, cv2.TM_CCOEFF_NORMED)
+            loc = np.where(result >= threshold)
+            all_detected_positions[key] = list(zip(loc[1], loc[0]))
+
+        # Flatten the dictionary and sort all positions based on x-coordinate
+        all_positions_list = [(key, pos) for key, positions in all_detected_positions.items() for pos in positions]
+        sorted_all_positions = sorted(all_positions_list, key=lambda x: x[1][0])
+
+        # Extract detected time
+        detected_time = ''.join([item[0] for item in sorted_all_positions])
+
+        # Convert the detected time to seconds
+        minutes, seconds = map(int, detected_time.split('colon'))
+        total_seconds = minutes * 60 + seconds
+
+        return total_seconds
