@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from pathlib import Path
@@ -18,6 +19,7 @@ class BuffBar(QWidget):
         self.bars = {}
         self.logger = self._setup_logger()
         self.initUI()
+        self.load_position()
 
     def _setup_logger(self):
         logger = logging.getLogger(__name__)
@@ -55,6 +57,20 @@ class BuffBar(QWidget):
 
     def mouseReleaseEvent(self, event):
         self.mpos = None
+        self.save_position()
+
+    def save_position(self):
+        position = self.pos()
+        with open(BASE / 'position.json', 'w') as f:
+            json.dump({'x': position.x(), 'y': position.y()}, f)
+
+    def load_position(self):
+        try:
+            with open(BASE / 'position.json', 'r') as f:
+                position = json.load(f)
+                self.move(position['x'], position['y'])
+        except FileNotFoundError:
+            pass
 
     def update(self, buff, remaining):
         if buff in self.bars:

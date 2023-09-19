@@ -89,3 +89,4 @@ workspace/memory/*
 workspace/all_output.txt
 workspace/file_list.txt
 workspace/prompt
+workspace/position.json
