@@ -34,7 +34,11 @@ class BuffDetector:
 
     def detect(self):
         # Capture screen
-        screen_gray, screen_color = self.capture_screen()
+        try:
+            screen_gray, screen_color = self.capture_screen()
+        except OSError as e:
+            self.logger.error(f"Failed to capture screen: {e}")
+            return []
 
         # Detect buffs
         buffs = []
