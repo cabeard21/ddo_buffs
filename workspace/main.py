@@ -57,20 +57,25 @@ class MainApp(QWidget):
         self.buff_bar.display()
 
     def main(self):
-        # Load area of interest coordinates
-        with open(BASE / 'coordinates.json', 'r') as f:
-            coordinates = json.load(f)
+        # Load config
+        with open(BASE / 'config.json', 'r') as f:
+            config = json.load(f)
 
         # Initialize classes
         buff_dir = BASE / 'buffs'
         template_dir = BASE / 'templates'
-        self.buff_detector = BuffDetector(coordinates, buff_dir, 0.7)
+        self.buff_detector = BuffDetector(config['buff_coordinates'], buff_dir,
+                                          0.7)
         self.buff_timer = BuffTimer()
         self.buff_sorter = BuffSorter()
         self.buff_ocr = BuffOCR(template_dir)
 
         # Initialize BuffBar with tkinter root
-        self.buff_bar = BuffBar()
+        stack_buffs = {
+            item['name']: item['buffs']
+            for item in config['buff_config']['stack_buffs']
+        }
+        self.buff_bar = BuffBar(stack_buffs)
 
         # QTimer to update the bars
         self.timer = QTimer(self)
