@@ -13,12 +13,13 @@ BASE = Path(__file__).resolve().parent
 
 class BuffBar(QWidget):
 
-    def __init__(self, stack_buffs=None):
+    def __init__(self, stack_buffs=[], cooldowns={}):
         super().__init__()
         self.mpos = None
         self.bars = {}
         self.logger = self._setup_logger()
         self.stack_buffs = stack_buffs
+        self.cooldowns = cooldowns
         self.initUI()
         self.load_position()
 
@@ -84,10 +85,8 @@ class BuffBar(QWidget):
             for other_buff in self.stack_buffs[stack_name]:
                 if other_buff != buff and other_buff in self.bars:
                     self.removeBuffBar(other_buff)
-            # Use the stack name for the GUI
-            self._update_or_create_buff(buff, remaining)
-        else:
-            self._update_or_create_buff(buff, remaining)
+
+        self._update_or_create_buff(buff, remaining)
 
     def _update_or_create_buff(self, buff, remaining):
         if buff in self.bars:
@@ -116,9 +115,15 @@ class BuffBar(QWidget):
             buffBar = TimerWidget(buff, remaining, self.logger, icon_path)
             self.bars[buff] = buffBar
             self.layout.addWidget(buffBar)
+            buffBar.cooldownStarted.connect(self.start_buff_cooldown)
             self.logger.debug(
                 f'Created new buff bar for {buff} with remaining '
                 f'time {remaining}')
+
+    def start_buff_cooldown(self, buff):
+        cooldown_duration = self.cooldowns.get(buff, 0)
+        if cooldown_duration > 0:
+            self.bars[buff].start_cooldown(cooldown_duration)
 
     def removeBuffBar(self, buff):
         if buff in self.bars:
@@ -136,7 +141,6 @@ class BuffBar(QWidget):
                 # Move the widget to the end, effectively reordering it
                 self.layout.removeWidget(self.bars[buff])
                 self.layout.addWidget(self.bars[buff])
-                self.logger.debug(f'Moved {buff} to the end of the layout')
 
     def display(self):
         self.show()
@@ -144,6 +148,7 @@ class BuffBar(QWidget):
 
 class TimerWidget(QWidget):
     buffExpired = pyqtSignal(str)
+    cooldownStarted = pyqtSignal(str)
 
     def __init__(self, buff, remaining, logger, icon_path=None):
         super().__init__()
@@ -152,6 +157,7 @@ class TimerWidget(QWidget):
         self.buff = buff
         self.icon_path = icon_path or str(BASE / f'buffs/{self.buff}')
         self.expired = False
+        self.in_cooldown = False
         self.initUI()
 
     def initUI(self):
@@ -195,7 +201,10 @@ class TimerWidget(QWidget):
             self.progressBar.setValue(currentValue - 1)
             self.progressBar.setFormat(f'{round(currentValue - 1)} s')
         else:
-            self._handle_buff_expiry()
+            if self.in_cooldown:
+                self._end_cooldown()
+            else:
+                self._handle_buff_expiry()
 
     def _handle_buff_expiry(self):
         self.progressBar.setValue(self.progressBar.maximum())
@@ -206,6 +215,29 @@ class TimerWidget(QWidget):
         self.timer.stop()
         self.expired = True
         self.buffExpired.emit(self.buff)
+        self.cooldownStarted.emit(self.buff)
+
+    def start_cooldown(self, duration):
+        self.in_cooldown = True
+        self.progressBar.setMaximum(int(duration))
+        self.progressBar.setValue(int(duration))
+        self.progressBar.setFormat(f'{round(duration)} s')
+        self.progressBar.setStyleSheet(
+            "QProgressBar::chunk { background-color: blue }")
+        if not self.timer.isActive():
+            self.timer.start(1000)
+        self.logger.debug(
+            f'Started cooldown for {self.buff} with duration {duration} '
+            f'seconds')
+
+    def _end_cooldown(self):
+        self.in_cooldown = False
+        self.progressBar.setValue(self.progressBar.maximum())
+        self.progressBar.setStyleSheet(
+            "QProgressBar::chunk { background-color: red }")
+        self.progressBar.setFormat('')
+        self.logger.debug(f'Cooldown for {self.buff} has ended')
+        self.timer.stop()
 
     def reset(self, remaining):
         self.expired = False

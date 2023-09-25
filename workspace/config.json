@@ -15,6 +15,10 @@
             "divine_might.png",
             "action_boosts",
             "exalted_smite.png"
-        ]
+        ],
+        "cooldowns": {
+            "action_boost_haste.png": 10,
+            "action_boost_melee_ranged_power.png": 10
+        }
     }
 }

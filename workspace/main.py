@@ -77,7 +77,8 @@ class MainApp(QWidget):
             item['name']: item['buffs']
             for item in config['buff_config']['stack_buffs']
         }
-        self.buff_bar = BuffBar(stack_buffs)
+        cooldowns = config['buff_config'].get('cooldowns', {})
+        self.buff_bar = BuffBar(stack_buffs, cooldowns)
 
         # Initialize BuffSorter with buff_order
         buff_order = config['buff_config']['buff_order']
