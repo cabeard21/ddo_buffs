@@ -127,6 +127,17 @@ class BuffBar(QWidget):
             del self.bars[buff]
             self.logger.debug(f'Removed buff bar for {buff}')
 
+    def reorder_bars(self, sorted_order):
+        """
+        Reorder the bars based on the sorted order
+        """
+        for buff, _ in sorted_order:
+            if buff in self.bars:
+                # Move the widget to the end, effectively reordering it
+                self.layout.removeWidget(self.bars[buff])
+                self.layout.addWidget(self.bars[buff])
+                self.logger.debug(f'Moved {buff} to the end of the layout')
+
     def display(self):
         self.show()
 

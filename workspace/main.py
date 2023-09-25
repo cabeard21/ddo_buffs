@@ -53,6 +53,9 @@ class MainApp(QWidget):
         # Update bars with sorted order
         self.buff_bar.bars = dict(sorted_bars)
 
+        # Reorder the bars in the GUI
+        self.buff_bar.reorder_bars(sorted_bars)
+
         # Display bars
         self.buff_bar.display()
 
@@ -67,7 +70,6 @@ class MainApp(QWidget):
         self.buff_detector = BuffDetector(config['buff_coordinates'], buff_dir,
                                           0.7)
         self.buff_timer = BuffTimer()
-        self.buff_sorter = BuffSorter()
         self.buff_ocr = BuffOCR(template_dir)
 
         # Initialize BuffBar with tkinter root
@@ -76,6 +78,10 @@ class MainApp(QWidget):
             for item in config['buff_config']['stack_buffs']
         }
         self.buff_bar = BuffBar(stack_buffs)
+
+        # Initialize BuffSorter with buff_order
+        buff_order = config['buff_config']['buff_order']
+        self.buff_sorter = BuffSorter(buff_order, stack_buffs)
 
         # QTimer to update the bars
         self.timer = QTimer(self)
