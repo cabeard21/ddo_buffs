@@ -13,11 +13,12 @@ BASE = Path(__file__).resolve().parent
 
 class BuffBar(QWidget):
 
-    def __init__(self):
+    def __init__(self, stack_buffs=None):
         super().__init__()
         self.mpos = None
         self.bars = {}
         self.logger = self._setup_logger()
+        self.stack_buffs = stack_buffs
         self.initUI()
         self.load_position()
 
@@ -73,6 +74,22 @@ class BuffBar(QWidget):
             pass
 
     def update(self, buff, remaining):
+        # Check if the buff is part of a stack
+        stack_name = next(
+            (name
+             for name, buffs in self.stack_buffs.items() if buff in buffs),
+            None)
+        if stack_name:
+            # If another buff from the same stack is active, remove it
+            for other_buff in self.stack_buffs[stack_name]:
+                if other_buff != buff and other_buff in self.bars:
+                    self.removeBuffBar(other_buff)
+            # Use the stack name for the GUI
+            self._update_or_create_buff(buff, remaining)
+        else:
+            self._update_or_create_buff(buff, remaining)
+
+    def _update_or_create_buff(self, buff, remaining):
         if buff in self.bars:
             self._update_existing_buff(buff, remaining)
         else:
@@ -90,7 +107,13 @@ class BuffBar(QWidget):
 
     def _create_new_buff(self, buff, remaining):
         if remaining > 0:
-            buffBar = TimerWidget(buff, remaining, self.logger)
+            # Determine the icon path
+            if buff in self.stack_buffs:
+                # Use the first buff in the stack as the default icon
+                icon_path = str(BASE / f'buffs/{self.stack_buffs[buff][0]}')
+            else:
+                icon_path = None  # TimerWidget will use the default path
+            buffBar = TimerWidget(buff, remaining, self.logger, icon_path)
             self.bars[buff] = buffBar
             self.layout.addWidget(buffBar)
             self.logger.debug(
@@ -111,11 +134,12 @@ class BuffBar(QWidget):
 class TimerWidget(QWidget):
     buffExpired = pyqtSignal(str)
 
-    def __init__(self, buff, remaining, logger):
+    def __init__(self, buff, remaining, logger, icon_path=None):
         super().__init__()
         self.logger = logger
         self.remaining = remaining
         self.buff = buff
+        self.icon_path = icon_path or str(BASE / f'buffs/{self.buff}')
         self.expired = False
         self.initUI()
 
@@ -131,13 +155,12 @@ class TimerWidget(QWidget):
         self.setLayout(self.layout)
 
     def _add_icon_label(self):
-        self.iconLabel = QLabel(self)
-        icon_path = str(BASE / f'buffs/{self.buff}')
-        if os.path.exists(icon_path):
-            self.iconLabel.setPixmap(QIcon(icon_path).pixmap(22, 22))
+        self.icon_label = QLabel(self)
+        if os.path.exists(self.icon_path):
+            self.icon_label.setPixmap(QIcon(self.icon_path).pixmap(22, 22))
         else:
-            self.logger.error(f'Icon not found: {icon_path}')
-        self.layout.addWidget(self.iconLabel)
+            self.logger.error(f'Icon not found: {self.icon_path}')
+        self.layout.addWidget(self.icon_label)
 
     def _add_progress_bar(self):
         self.progressBar = QProgressBar(self)
