@@ -11,7 +11,7 @@ class TimerWidget(QWidget):
     buffExpired = pyqtSignal(str)
     cooldownStarted = pyqtSignal(str)
 
-    def __init__(self, buff, remaining, logger, icon_path=None, data_dir=None):
+    def __init__(self, buff, remaining, icon_path=None, data_dir=None):
         super().__init__()
         self.data_dir = data_dir or str(Path(__file__).resolve().parent)
         self.logger = self._setup_logger()
@@ -82,10 +82,7 @@ class TimerWidget(QWidget):
                 self._handle_buff_expiry()
 
     def _handle_buff_expiry(self):
-        self.progressBar.setValue(self.progressBar.maximum())
-        self.progressBar.setStyleSheet(
-            "QProgressBar::chunk { background-color: red }")
-        self.progressBar.setFormat('')
+        self._set_progress_bar(self.progressBar.maximum(), "red", '')
         self.logger.debug(f'Buff {self.buff} has expired')
         self.timer.stop()
         self.expired = True
@@ -95,10 +92,7 @@ class TimerWidget(QWidget):
     def start_cooldown(self, duration):
         self.in_cooldown = True
         self.progressBar.setMaximum(int(duration))
-        self.progressBar.setValue(int(duration))
-        self.progressBar.setFormat(f'{round(duration)} s')
-        self.progressBar.setStyleSheet(
-            "QProgressBar::chunk { background-color: blue }")
+        self._set_progress_bar(int(duration), "blue", f'{round(duration)} s')
         if not self.timer.isActive():
             self.timer.start(1000)
         self.logger.debug(
@@ -107,10 +101,7 @@ class TimerWidget(QWidget):
 
     def _end_cooldown(self):
         self.in_cooldown = False
-        self.progressBar.setValue(self.progressBar.maximum())
-        self.progressBar.setStyleSheet(
-            "QProgressBar::chunk { background-color: red }")
-        self.progressBar.setFormat('')
+        self._set_progress_bar(self.progressBar.maximum(), "red", '')
         self.logger.debug(f'Cooldown for {self.buff} has ended')
         self.timer.stop()
 
@@ -118,12 +109,16 @@ class TimerWidget(QWidget):
         self.expired = False
         self.remaining = remaining
         self.progressBar.setMaximum(int(self.remaining))
-        self.progressBar.setValue(int(self.remaining))
-        self.progressBar.setFormat(f'{round(self.remaining)} s')
-        self.progressBar.setStyleSheet(
-            "QProgressBar::chunk { background-color: #00FF00; }")
+        self._set_progress_bar(int(self.remaining), "#00FF00",
+                               f'{round(self.remaining)} s')
         if not self.timer.isActive():
             self.timer.start(1000)
         self.logger.debug(
             f'TimerWidget reset buff bar for {self.buff} with remaining '
             f'time {remaining}')
+
+    def _set_progress_bar(self, value, color, format):
+        self.progressBar.setValue(value)
+        self.progressBar.setStyleSheet(
+            f"QProgressBar::chunk {{ background-color: {color} }}")
+        self.progressBar.setFormat(format)
