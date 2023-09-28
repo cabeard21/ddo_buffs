@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -12,7 +13,21 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QApplication, QMenu, QSystemTrayIcon, QVBoxLayout,
                              QWidget)
 
-BASE = Path(__file__).resolve().parent
+if getattr(sys, 'frozen', False):
+    # The application is running as a bundled executable
+    DATA_DIR = os.path.join(os.path.expanduser("~"), "DDO Buffs")
+else:
+    # The application is running as a standard Python script
+    DATA_DIR = Path(__file__).resolve().parent
+
+if not os.path.exists(DATA_DIR):
+    os.makedirs(DATA_DIR)
+
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    base_path = getattr(sys, '_MEIPASS', str(DATA_DIR))
+    return os.path.join(base_path, relative_path)
 
 
 class MainApp(QWidget):
@@ -39,7 +54,7 @@ class MainApp(QWidget):
 
     def init_tray_icon(self):
         self.tray_icon = QSystemTrayIcon(self)
-        self.tray_icon.setIcon(QIcon(str(BASE / 'icon.ico')))
+        self.tray_icon.setIcon(QIcon(resource_path('icon.ico')))
 
         tray_menu = QMenu()
 
@@ -84,12 +99,12 @@ class MainApp(QWidget):
 
     def main(self):
         # Load config
-        with open(BASE / 'config.json', 'r') as f:
+        with open(DATA_DIR / 'config.json', 'r') as f:
             config = json.load(f)
 
         # Initialize classes
-        buff_dir = BASE / 'buffs'
-        template_dir = BASE / 'templates'
+        buff_dir = resource_path('buffs')
+        template_dir = resource_path('templates')
         self.buff_detector = BuffDetector(config['buff_coordinates'], buff_dir,
                                           0.7)
         self.buff_timer = BuffTimer()
@@ -101,11 +116,11 @@ class MainApp(QWidget):
             for item in config['buff_config']['stack_buffs']
         }
         cooldowns = config['buff_config'].get('cooldowns', {})
-        self.buff_bar = BuffBar(stack_buffs, cooldowns)
+        self.buff_bar = BuffBar(stack_buffs, cooldowns, str(DATA_DIR))
 
         # Initialize BuffSorter with buff_order
         buff_order = config['buff_config']['buff_order']
-        self.buff_sorter = BuffSorter(buff_order, stack_buffs)
+        self.buff_sorter = BuffSorter(buff_order, stack_buffs, str(DATA_DIR))
 
         # QTimer to update the bars
         self.timer = QTimer(self)

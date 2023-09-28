@@ -7,13 +7,13 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
 from timer_widget import TimerWidget
 
-BASE = Path(__file__).resolve().parent
-
 
 class BuffBar(QWidget):
 
-    def __init__(self, stack_buffs=[], cooldowns={}):
+    def __init__(self, stack_buffs=[], cooldowns={}, data_dir=None):
         super().__init__()
+        self.data_dir = data_dir or str(Path(__file__).resolve().parent)
+
         self.mpos = None
         self.bars = {}
         self.logger = self._setup_logger()
@@ -26,8 +26,7 @@ class BuffBar(QWidget):
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.DEBUG)
         handler = logging.FileHandler(
-            os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                         'application.log'))
+            os.path.join(self.data_dir, 'application.log'))
         handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -62,12 +61,12 @@ class BuffBar(QWidget):
 
     def save_position(self):
         position = self.pos()
-        with open(BASE / 'position.json', 'w') as f:
+        with open(os.path.join(self.data_dir, 'position.json'), 'w') as f:
             json.dump({'x': position.x(), 'y': position.y()}, f)
 
     def load_position(self):
         try:
-            with open(BASE / 'position.json', 'r') as f:
+            with open(os.path.join(self.data_dir, 'position.json'), 'r') as f:
                 position = json.load(f)
                 self.move(position['x'], position['y'])
         except FileNotFoundError:
@@ -108,7 +107,8 @@ class BuffBar(QWidget):
             # Determine the icon path
             if buff in self.stack_buffs:
                 # Use the first buff in the stack as the default icon
-                icon_path = str(BASE / f'buffs/{self.stack_buffs[buff][0]}')
+                icon_path = str(self.data_dir /
+                                f'buffs/{self.stack_buffs[buff][0]}')
             else:
                 icon_path = None  # TimerWidget will use the default path
             buffBar = TimerWidget(buff, remaining, self.logger, icon_path)

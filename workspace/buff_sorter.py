@@ -1,10 +1,13 @@
 import logging
 import os
+from pathlib import Path
 
 
 class BuffSorter:
 
-    def __init__(self, buff_order, stack_buffs):
+    def __init__(self, buff_order, stack_buffs, data_dir=None):
+        self.data_dir = data_dir or str(Path(__file__).resolve().parent)
+
         self.buff_order = buff_order
         self.stack_buffs = stack_buffs
         self.logger = self._setup_logger()
@@ -15,8 +18,7 @@ class BuffSorter:
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.DEBUG)
         handler = logging.FileHandler(
-            os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                         'buff_sorter.log'))
+            os.path.join(self.data_dir, 'buff_sorter.log'))
         handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
