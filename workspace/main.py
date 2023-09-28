@@ -8,7 +8,9 @@ from buff_ocr import BuffOCR
 from buff_sorter import BuffSorter
 from buff_timer import BuffTimer
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import (QApplication, QMenu, QSystemTrayIcon, QVBoxLayout,
+                             QWidget)
 
 BASE = Path(__file__).resolve().parent
 
@@ -17,6 +19,7 @@ class MainApp(QWidget):
 
     def __init__(self):
         super().__init__()
+        self.tray_icon = None
         self.initUI()
 
     def initUI(self):
@@ -31,6 +34,26 @@ class MainApp(QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.show()
+
+        self.init_tray_icon()
+
+    def init_tray_icon(self):
+        self.tray_icon = QSystemTrayIcon(self)
+        self.tray_icon.setIcon(QIcon(str(BASE / 'icon.ico')))
+
+        tray_menu = QMenu()
+
+        close_action = tray_menu.addAction("Close")
+        close_action.triggered.connect(self.close_app)
+
+        self.tray_icon.setContextMenu(tray_menu)
+
+        self.tray_icon.show()
+
+    def close_app(self):
+        self.tray_icon.hide()
+        self.close()
+        QApplication.quit()
 
     def update_bars(self):
         # Detect buffs
