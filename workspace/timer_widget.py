@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 
@@ -5,22 +6,34 @@ from PyQt5.QtCore import Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QHBoxLayout, QLabel, QProgressBar, QWidget
 
-BASE = Path(__file__).resolve().parent
-
 
 class TimerWidget(QWidget):
     buffExpired = pyqtSignal(str)
     cooldownStarted = pyqtSignal(str)
 
-    def __init__(self, buff, remaining, logger, icon_path=None):
+    def __init__(self, buff, remaining, logger, icon_path=None, data_dir=None):
         super().__init__()
-        self.logger = logger
+        self.data_dir = data_dir or str(Path(__file__).resolve().parent)
+        self.logger = self._setup_logger()
         self.remaining = remaining
         self.buff = buff
-        self.icon_path = icon_path or str(BASE / f'buffs/{self.buff}')
+        self.icon_path = icon_path or os.path.join(self.data_dir,
+                                                   f'buffs/{self.buff}')
         self.expired = False
         self.in_cooldown = False
         self.initUI()
+
+    def _setup_logger(self):
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.DEBUG)
+        handler = logging.FileHandler(
+            os.path.join(self.data_dir, 'application.log'))
+        handler.setLevel(logging.DEBUG)
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        return logger
 
     def initUI(self):
         self._setup_layout()
@@ -104,6 +117,7 @@ class TimerWidget(QWidget):
     def reset(self, remaining):
         self.expired = False
         self.remaining = remaining
+        self.progressBar.setMaximum(int(self.remaining))
         self.progressBar.setValue(int(self.remaining))
         self.progressBar.setFormat(f'{round(self.remaining)} s')
         self.progressBar.setStyleSheet(
