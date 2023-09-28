@@ -107,8 +107,8 @@ class BuffBar(QWidget):
             # Determine the icon path
             if buff in self.stack_buffs:
                 # Use the first buff in the stack as the default icon
-                icon_path = str(self.data_dir /
-                                f'buffs/{self.stack_buffs[buff][0]}')
+                icon_path = os.path.join(self.data_dir,
+                                         f'buffs/{self.stack_buffs[buff][0]}')
             else:
                 icon_path = None  # TimerWidget will use the default path
             buffBar = TimerWidget(buff, remaining, self.logger, icon_path)

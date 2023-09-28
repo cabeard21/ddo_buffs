@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -13,20 +14,35 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QApplication, QMenu, QSystemTrayIcon, QVBoxLayout,
                              QWidget)
 
+
+def setup_data_directory():
+    """Set up the data directory in the user's home folder."""
+    if not os.path.exists(DATA_DIR):
+        os.makedirs(DATA_DIR)
+
+    # Check and copy config.json
+    config_path = os.path.join(DATA_DIR, 'config.json')
+    if not os.path.exists(config_path):
+        shutil.copy(os.path.join(sys._MEIPASS, 'config.json'), config_path)
+
+    # Check and copy buffs directory
+    buffs_dir = os.path.join(DATA_DIR, 'buffs')
+    if not os.path.exists(buffs_dir):
+        shutil.copytree(os.path.join(sys._MEIPASS, 'buffs'), buffs_dir)
+
+
 if getattr(sys, 'frozen', False):
     # The application is running as a bundled executable
-    DATA_DIR = os.path.join(os.path.expanduser("~"), "DDO Buffs")
+    DATA_DIR = os.path.join(os.path.expanduser("~"), ".DDO Buffs")
+    setup_data_directory()
 else:
     # The application is running as a standard Python script
-    DATA_DIR = Path(__file__).resolve().parent
-
-if not os.path.exists(DATA_DIR):
-    os.makedirs(DATA_DIR)
+    DATA_DIR = str(Path(__file__).resolve().parent)
 
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
-    base_path = getattr(sys, '_MEIPASS', str(DATA_DIR))
+    base_path = getattr(sys, '_MEIPASS', DATA_DIR)
     return os.path.join(base_path, relative_path)
 
 
@@ -99,7 +115,7 @@ class MainApp(QWidget):
 
     def main(self):
         # Load config
-        with open(DATA_DIR / 'config.json', 'r') as f:
+        with open(os.path.join(DATA_DIR, 'config.json'), 'r') as f:
             config = json.load(f)
 
         # Initialize classes
@@ -116,11 +132,11 @@ class MainApp(QWidget):
             for item in config['buff_config']['stack_buffs']
         }
         cooldowns = config['buff_config'].get('cooldowns', {})
-        self.buff_bar = BuffBar(stack_buffs, cooldowns, str(DATA_DIR))
+        self.buff_bar = BuffBar(stack_buffs, cooldowns, DATA_DIR)
 
         # Initialize BuffSorter with buff_order
         buff_order = config['buff_config']['buff_order']
-        self.buff_sorter = BuffSorter(buff_order, stack_buffs, str(DATA_DIR))
+        self.buff_sorter = BuffSorter(buff_order, stack_buffs, DATA_DIR)
 
         # QTimer to update the bars
         self.timer = QTimer(self)
