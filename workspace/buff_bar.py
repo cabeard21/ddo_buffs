@@ -111,7 +111,7 @@ class BuffBar(QWidget):
                                          f'buffs/{self.stack_buffs[buff][0]}')
             else:
                 icon_path = None  # TimerWidget will use the default path
-            buffBar = TimerWidget(buff, remaining, self.logger, icon_path)
+            buffBar = TimerWidget(buff, remaining, icon_path, self.data_dir)
             self.bars[buff] = buffBar
             self.layout.addWidget(buffBar)
             buffBar.cooldownStarted.connect(self.start_buff_cooldown)
