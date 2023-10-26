@@ -11,8 +11,7 @@ from buff_sorter import BuffSorter
 from buff_timer import BuffTimer
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (QApplication, QMenu, QSystemTrayIcon, QVBoxLayout,
-                             QWidget)
+from PyQt5.QtWidgets import QApplication, QMenu, QSystemTrayIcon, QVBoxLayout, QWidget
 
 
 def setup_data_directory():
@@ -21,17 +20,17 @@ def setup_data_directory():
         os.makedirs(DATA_DIR)
 
     # Check and copy config.json
-    config_path = os.path.join(DATA_DIR, 'config.json')
+    config_path = os.path.join(DATA_DIR, "config.json")
     if not os.path.exists(config_path):
-        shutil.copy(os.path.join(sys._MEIPASS, 'config.json'), config_path)
+        shutil.copy(os.path.join(sys._MEIPASS, "config.json"), config_path)
 
     # Check and copy buffs directory
-    buffs_dir = os.path.join(DATA_DIR, 'buffs')
+    buffs_dir = os.path.join(DATA_DIR, "buffs")
     if not os.path.exists(buffs_dir):
-        shutil.copytree(os.path.join(sys._MEIPASS, 'buffs'), buffs_dir)
+        shutil.copytree(os.path.join(sys._MEIPASS, "buffs"), buffs_dir)
 
 
-if getattr(sys, 'frozen', False):
+if getattr(sys, "frozen", False):
     # The application is running as a bundled executable
     DATA_DIR = os.path.join(os.path.expanduser("~"), ".DDO Buffs")
     setup_data_directory()
@@ -41,13 +40,12 @@ else:
 
 
 def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and for PyInstaller """
-    base_path = getattr(sys, '_MEIPASS', DATA_DIR)
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    base_path = getattr(sys, "_MEIPASS", DATA_DIR)
     return os.path.join(base_path, relative_path)
 
 
 class MainApp(QWidget):
-
     def __init__(self):
         super().__init__()
         self.tray_icon = None
@@ -60,8 +58,7 @@ class MainApp(QWidget):
 
         # Remove title bar, set background transparent,
         # and make window always on top
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool
-                            | Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.show()
@@ -70,7 +67,7 @@ class MainApp(QWidget):
 
     def init_tray_icon(self):
         self.tray_icon = QSystemTrayIcon(self)
-        self.tray_icon.setIcon(QIcon(resource_path('icon.ico')))
+        self.tray_icon.setIcon(QIcon(resource_path("icon.ico")))
 
         tray_menu = QMenu()
 
@@ -115,27 +112,25 @@ class MainApp(QWidget):
 
     def main(self):
         # Load config
-        with open(os.path.join(DATA_DIR, 'config.json'), 'r') as f:
+        with open(os.path.join(DATA_DIR, "config.json"), "r") as f:
             config = json.load(f)
 
         # Initialize classes
-        buff_dir = resource_path('buffs')
-        template_dir = resource_path('templates')
-        self.buff_detector = BuffDetector(config['buff_coordinates'], buff_dir,
-                                          0.7)
+        buff_dir = resource_path("buffs")
+        template_dir = resource_path("templates")
+        self.buff_detector = BuffDetector(config["buff_coordinates"], buff_dir, 0.8)
         self.buff_timer = BuffTimer()
         self.buff_ocr = BuffOCR(template_dir)
 
         # Initialize BuffBar with tkinter root
         stack_buffs = {
-            item['name']: item['buffs']
-            for item in config['buff_config']['stack_buffs']
+            item["name"]: item["buffs"] for item in config["buff_config"]["stack_buffs"]
         }
-        cooldowns = config['buff_config'].get('cooldowns', {})
+        cooldowns = config["buff_config"].get("cooldowns", {})
         self.buff_bar = BuffBar(stack_buffs, cooldowns, DATA_DIR)
 
         # Initialize BuffSorter with buff_order
-        buff_order = config['buff_config']['buff_order']
+        buff_order = config["buff_config"]["buff_order"]
         self.buff_sorter = BuffSorter(buff_order, stack_buffs, DATA_DIR)
 
         # QTimer to update the bars
