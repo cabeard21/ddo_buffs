@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -35,13 +36,17 @@ class BuffDetector:
         self.logger.debug(f"Loaded templates: {templates.keys()}")
         return templates
 
-    def detect(self):
-        # Capture screen
-        try:
-            screen_gray, screen_color = self.capture_screen()
-        except OSError as e:
-            self.logger.error(f"Failed to capture screen: {e}")
-            return []
+    def detect(self, debug_mode: bool = False, screenshot: Path = None):
+        # Capture screen or use provided image
+        if screenshot:
+            screen_gray = cv2.imread(str(screenshot), 0)
+            screen_color = cv2.imread(str(screenshot))
+        else:
+            try:
+                screen_gray, screen_color = self.capture_screen()
+            except OSError as e:
+                self.logger.error(f"Failed to capture screen: {e}")
+                return []
 
         # Detect buffs
         buffs = []
@@ -70,6 +75,43 @@ class BuffDetector:
                 f"Match template result for {name}: {max_loc} with " f"value {max_val}"
             )
 
+            if debug_mode:
+                # Draw a rectangle around the detected buff
+                cv2.rectangle(
+                    screen_color,
+                    max_loc,
+                    (max_loc[0] + template.shape[1], max_loc[1] + template.shape[0]),
+                    (0, 255, 0),
+                    2,
+                )
+                # Draw the buff name
+                cv2.putText(
+                    screen_color,
+                    name,
+                    (max_loc[0], max_loc[1] - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.9,
+                    (36, 255, 12),
+                    2,
+                )
+
+        if debug_mode:
+            # Draw a rectangle around the area of interest
+            cv2.rectangle(
+                screen_color,
+                (self.coordinates[0], self.coordinates[1]),
+                (self.coordinates[2], self.coordinates[3]),
+                (0, 0, 255),
+                2,
+            )
+            # Save the screenshot with the boxes
+            cv2.imwrite(
+                os.path.join(
+                    os.path.dirname(os.path.realpath(__file__)), "screenshot.png"
+                ),
+                screen_color,
+            )
+
         return buffs
 
     def capture_screen(self):
@@ -80,3 +122,12 @@ class BuffDetector:
         # Convert the screenshot to color
         screen_color = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
         return screen_gray, screen_color
+
+
+if __name__ == "__main__":
+    buff_detector = BuffDetector(
+        coordinates=(0, 0, 950, 50),
+        buff_dir=os.path.join(os.path.dirname(os.path.realpath(__file__)), "buffs"),
+    )
+    buffs = buff_detector.detect(debug_mode=True, screenshot="debug_ss.png")
+    print([buff[0] for buff in buffs])
