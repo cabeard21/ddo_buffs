@@ -32,6 +32,9 @@
         "cooldowns": {
             "action_boost_haste.png": 10,
             "action_boost_melee_ranged_power.png": 10
+        },
+        "thresholds": {
+            "prayer.png": 0.95
         }
     }
 }

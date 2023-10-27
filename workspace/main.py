@@ -118,11 +118,13 @@ class MainApp(QWidget):
         # Initialize classes
         buff_dir = resource_path("buffs")
         template_dir = resource_path("templates")
-        self.buff_detector = BuffDetector(config["buff_coordinates"], buff_dir, 0.8)
+        self.buff_detector = BuffDetector(
+            config["buff_coordinates"], buff_dir, config["buff_config"]
+        )
         self.buff_timer = BuffTimer()
         self.buff_ocr = BuffOCR(template_dir)
 
-        # Initialize BuffBar with tkinter root
+        # Initialize BuffBar with tkinter root2
         stack_buffs = {
             item["name"]: item["buffs"] for item in config["buff_config"]["stack_buffs"]
         }

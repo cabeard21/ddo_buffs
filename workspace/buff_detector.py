@@ -1,6 +1,7 @@
 import logging
 import os
 from pathlib import Path
+from typing import Any
 
 import cv2
 import numpy as np
@@ -8,9 +9,10 @@ import pyautogui
 
 
 class BuffDetector:
-    def __init__(self, coordinates, buff_dir, threshold=0.8):
+    def __init__(self, coordinates, buff_dir, buff_config, threshold=0.8):
         self.coordinates = coordinates
         self.buff_dir = buff_dir
+        self.buff_config = buff_config
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
         handler = logging.FileHandler(
@@ -36,7 +38,11 @@ class BuffDetector:
         self.logger.debug(f"Loaded templates: {templates.keys()}")
         return templates
 
-    def detect(self, debug_mode: bool = False, screenshot: Path = None):
+    def detect(
+        self,
+        debug_mode: bool = False,
+        screenshot: Path = None,
+    ):
         # Capture screen or use provided image
         if screenshot:
             screen_gray = cv2.imread(str(screenshot), 0)
@@ -47,6 +53,9 @@ class BuffDetector:
             except OSError as e:
                 self.logger.error(f"Failed to capture screen: {e}")
                 return []
+
+        # Load thresholds from buff_config
+        thresholds = self.buff_config.get("thresholds", {})
 
         # Detect buffs
         buffs = []
@@ -61,7 +70,9 @@ class BuffDetector:
                 cv2.TM_CCOEFF_NORMED,
             )
             _, max_val, _, max_loc = cv2.minMaxLoc(result)
-            if max_val < self.threshold:
+            # Use specific threshold if set, otherwise use default
+            threshold = thresholds.get(name, self.threshold)
+            if max_val < threshold:
                 continue
 
             # Extract image data
@@ -128,6 +139,7 @@ if __name__ == "__main__":
     buff_detector = BuffDetector(
         coordinates=(0, 0, 950, 50),
         buff_dir=os.path.join(os.path.dirname(os.path.realpath(__file__)), "buffs"),
+        buff_config={},
     )
     buffs = buff_detector.detect(debug_mode=True, screenshot="debug_ss.png")
     print([buff[0] for buff in buffs])
