@@ -1,11 +1,14 @@
 import logging
 import os
+import re
 
 import cv2
 import numpy as np
 
 
 def non_maximum_suppression(boxes, scores, threshold=0.5):
+    if not boxes:
+        return []
     boxes = np.array([(x1, y1, x2 - x1, y2 - y1) for (x1, y1, x2, y2) in boxes])
     areas = boxes[:, 2] * boxes[:, 3]
     order = scores.argsort()[::-1]
@@ -56,6 +59,7 @@ class BuffOCR:
         return templates
 
     def read(self, buff, image_data):
+        image_data = image_data[18:72, 0:18]
         all_boxes = []
         all_scores = []
         all_labels = []
@@ -67,25 +71,37 @@ class BuffOCR:
                 all_scores.append(result[y, x])
                 all_labels.append(key)
         keep_indices = non_maximum_suppression(
-            all_boxes, np.array(all_scores), threshold=0.5
+            all_boxes, np.array(all_scores), threshold=0.3
         )
         nms_boxes = [all_boxes[i] for i in keep_indices]
         nms_labels = [all_labels[i] for i in keep_indices]
         sorted_indices = sorted(range(len(nms_boxes)), key=lambda k: nms_boxes[k][0])
         sorted_labels = [nms_labels[i] for i in sorted_indices]
+
         detected_time = "".join(sorted_labels)
-        if detected_time.count("colon") > 1:
-            parts = detected_time.split("colon")
-            detected_time = "colon".join([parts[0], parts[-1]])
-        try:
-            minutes, seconds = map(int, detected_time.split("colon"))
-            total_seconds = minutes * 60 + seconds
-        except ValueError:
-            self.logger.error(
-                f"Error converting detected time to seconds for buff {buff}: "
-                f"{detected_time}"
-            )
-            total_seconds = 0
+
+        match = re.fullmatch(r"(\d{1,2})([ms])", detected_time)
+        if match:
+            value = int(match.group(1))
+            unit = match.group(2)
+            if unit == "m":
+                total_seconds = value * 60
+            elif unit == "s":
+                total_seconds = value
+            else:
+                total_seconds = 0
+        else:
+            # Only do this if regex didn't match (old fallback for colon-based timers)
+            try:
+                minutes, seconds = map(int, detected_time.split("colon"))
+                total_seconds = minutes * 60 + seconds
+            except ValueError:
+                self.logger.error(
+                    f"Error converting detected time to seconds for buff {buff}: "
+                    f"{detected_time}"
+                )
+                total_seconds = 0
+
         self.logger.debug(
             f"Detected time for buff {buff}: {detected_time} "
             f"({total_seconds} seconds)"
