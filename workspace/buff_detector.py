@@ -1,7 +1,6 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any
 
 import cv2
 import numpy as np
@@ -75,6 +74,10 @@ class BuffDetector:
             if max_val < threshold:
                 continue
 
+            # Offset max_loc
+            x_offset, y_offset = self.coordinates[0], self.coordinates[1]
+            max_loc = (max_loc[0] + x_offset, max_loc[1] + y_offset)
+
             # Extract image data
             image_data = screen_gray[
                 max_loc[1] : max_loc[1] + template.shape[0],
@@ -137,7 +140,7 @@ class BuffDetector:
 
 if __name__ == "__main__":
     buff_detector = BuffDetector(
-        coordinates=(0, 0, 950, 50),
+        coordinates=(373, 0, 954, 130),
         buff_dir=os.path.join(os.path.dirname(os.path.realpath(__file__)), "buffs"),
         buff_config={},
     )
