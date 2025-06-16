@@ -1,40 +1,18 @@
 {
     "buff_coordinates": [
+        373,
         0,
-        0,
-        950,
-        50
+        954,
+        130
     ],
     "buff_config": {
-        "stack_buffs": [
-            {
-                "name": "action_boosts",
-                "buffs": [
-                    "action_boost_haste.png",
-                    "action_boost_melee_ranged_power.png"
-                ]
-            },
-            {
-                "name": "paly_buffs",
-                "buffs": [
-                    "divine_favor.png",
-                    "prayer.png"
-                ]
-            }
-        ],
+        "stack_buffs": [],
         "buff_order": [
-            "paly_buffs",
-            "divine_might.png",
-            "haste_potion.png",
-            "action_boosts",
-            "exalted_smite.png"
-        ],
-        "cooldowns": {
-            "action_boost_haste.png": 10,
-            "action_boost_melee_ranged_power.png": 10
-        },
-        "thresholds": {
-            "prayer.png": 0.95
-        }
+            "celerity.png",
+            "weaponskill.png",
+            "evade.png",
+            "melee_abs.png",
+            "magic_abs.png"
+        ]
     }
 }
