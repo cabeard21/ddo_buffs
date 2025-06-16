@@ -91,3 +91,5 @@ workspace/file_list.txt
 workspace/prompt
 workspace/position.json
 .gpteng
+
+.venv
