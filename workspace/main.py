@@ -32,7 +32,7 @@ def setup_data_directory():
 
 if getattr(sys, "frozen", False):
     # The application is running as a bundled executable
-    DATA_DIR = os.path.join(os.path.expanduser("~"), ".DDO Buffs")
+    DATA_DIR = os.path.join(os.path.expanduser("~"), ".DAoC Buffs")
     setup_data_directory()
 else:
     # The application is running as a standard Python script
