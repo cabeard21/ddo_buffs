@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import shutil
 import sys
@@ -49,7 +50,21 @@ class MainApp(QWidget):
     def __init__(self):
         super().__init__()
         self.tray_icon = None
+        self.logger = self._setup_logger()
         self.initUI()
+
+    def _setup_logger(self):
+        """Set up logging for the main application."""
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.DEBUG)
+        handler = logging.FileHandler(os.path.join(DATA_DIR, "application.log"))
+        handler.setLevel(logging.DEBUG)
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        return logger
 
     def initUI(self):
         self.layout = QVBoxLayout()
@@ -112,11 +127,25 @@ class MainApp(QWidget):
 
     def main(self):
         # Load config
-        with open(os.path.join(DATA_DIR, "config.json"), "r") as f:
-            config = json.load(f)
+        config_path = os.path.join(DATA_DIR, "config.json")
+        try:
+            with open(config_path, "r") as f:
+                config = json.load(f)
+            self.logger.info(f"Successfully loaded config from {config_path}")
+        except FileNotFoundError:
+            self.logger.error(f"Config file not found: {config_path}")
+            return
+        except json.JSONDecodeError as e:
+            self.logger.error(f"Failed to parse config file {config_path}: {e}")
+            return
+        except Exception as e:
+            self.logger.error(
+                f"Unexpected error loading config file {config_path}: {e}"
+            )
+            return
 
         # Initialize classes
-        buff_dir = resource_path("buffs")
+        buff_dir = os.path.join(DATA_DIR, "buffs")
         template_dir = resource_path("templates")
         self.buff_detector = BuffDetector(
             config["buff_coordinates"], buff_dir, config["buff_config"]
