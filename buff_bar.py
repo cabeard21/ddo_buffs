@@ -77,12 +77,54 @@ class BuffBar(QWidget):
             (name for name, buffs in self.stack_buffs.items() if buff in buffs), None
         )
         if stack_name:
-            # If another buff from the same stack is active, remove it
+            # If another buff from the same stack is active, preserve its progress bar maximum
+            preserved_max = None
             for other_buff in self.stack_buffs[stack_name]:
                 if other_buff != buff and other_buff in self.bars:
+                    # Preserve the maximum from the existing buff before removing it
+                    preserved_max = self.bars[other_buff].progressBar.maximum()
                     self.removeBuffBar(other_buff)
 
-        self._update_or_create_buff(buff, remaining)
+            # If we have a preserved maximum, use it for the new buff
+            if preserved_max is not None:
+                self._update_or_create_buff_with_max(buff, remaining, preserved_max)
+            else:
+                self._update_or_create_buff(buff, remaining)
+        else:
+            self._update_or_create_buff(buff, remaining)
+
+    def _update_or_create_buff_with_max(self, buff, remaining, max_value):
+        """Create or update a buff with a specific maximum value for the progress bar."""
+        if buff in self.bars:
+            # Update existing buff with new maximum
+            self.bars[buff].progressBar.setMaximum(int(max_value))
+            self.bars[buff].progressBar.setValue(int(remaining))
+            self.bars[buff].progressBar.setFormat(f"{round(remaining)} s")
+            self.logger.debug(
+                f"Updated existing buff {buff} with preserved maximum "
+                f"{max_value} and remaining time {remaining}"
+            )
+        else:
+            # Create new buff with the preserved maximum
+            if remaining > 0:
+                # Determine the icon path
+                if buff in self.stack_buffs:
+                    # Use the first buff in the stack as the default icon
+                    icon_path = os.path.join(
+                        self.data_dir, f"buffs/{self.stack_buffs[buff][0]}"
+                    )
+                else:
+                    icon_path = None  # TimerWidget will use the default path
+                buffBar = TimerWidget(buff, remaining, icon_path, self.data_dir)
+                # Override the maximum with the preserved value
+                buffBar.progressBar.setMaximum(int(max_value))
+                self.bars[buff] = buffBar
+                self.layout.addWidget(buffBar)
+                buffBar.cooldownStarted.connect(self.start_buff_cooldown)
+                self.logger.debug(
+                    f"Created new buff bar for {buff} with preserved maximum "
+                    f"{max_value} and remaining time {remaining}"
+                )
 
     def _update_or_create_buff(self, buff, remaining):
         if buff in self.bars:
