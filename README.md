@@ -19,8 +19,10 @@ To compile:
 2. Change directory to the project root: ```cd projects/ddo_buffs/workspace```
 3. Run:
 
-```pyinstaller --onefile --windowed --add-data="icon.ico;." --add-data="config.json;." --add-data="buffs;buffs" --add-data="templates;templates" --icon=icon.ico -n "DDO Buffs" main.py```
+```pyinstaller --onefile --windowed --add-data="icon.ico;." --add-data="config.json;." --add-data="CONFIG_GUIDE.md;." --add-data="buffs;buffs" --add-data="templates;templates" --icon=icon.ico -n "DDO Buffs" main.py```
 
 OR
 
 ```pyinstaller "DDO Buffs.spec"```
+
+**Note**: The installer will automatically place the configuration guide (`CONFIG_GUIDE.md`) in the same directory as `config.json` when the application is first run.

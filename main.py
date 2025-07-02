@@ -25,6 +25,11 @@ def setup_data_directory():
     if not os.path.exists(config_path):
         shutil.copy(os.path.join(sys._MEIPASS, "config.json"), config_path)
 
+    # Check and copy configuration guide
+    guide_path = os.path.join(DATA_DIR, "CONFIG_GUIDE.md")
+    if not os.path.exists(guide_path):
+        shutil.copy(os.path.join(sys._MEIPASS, "CONFIG_GUIDE.md"), guide_path)
+
     # Check and copy buffs directory
     buffs_dir = os.path.join(DATA_DIR, "buffs")
     if not os.path.exists(buffs_dir):

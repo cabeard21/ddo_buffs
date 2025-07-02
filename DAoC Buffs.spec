@@ -5,7 +5,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('icon.ico', '.'), ('config.json', '.'), ('buffs', 'buffs'), ('templates', 'templates')],
+    datas=[('icon.ico', '.'), ('config.json', '.'), ('CONFIG_GUIDE.md', '.'), ('buffs', 'buffs'), ('templates', 'templates')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
