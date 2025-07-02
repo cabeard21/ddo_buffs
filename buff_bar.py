@@ -77,7 +77,8 @@ class BuffBar(QWidget):
             (name for name, buffs in self.stack_buffs.items() if buff in buffs), None
         )
         if stack_name:
-            # If another buff from the same stack is active, preserve its progress bar maximum
+            # If another buff from the same stack is active, preserve its progress
+            # bar maximum
             preserved_max = None
             for other_buff in self.stack_buffs[stack_name]:
                 if other_buff != buff and other_buff in self.bars:
@@ -94,7 +95,8 @@ class BuffBar(QWidget):
             self._update_or_create_buff(buff, remaining)
 
     def _update_or_create_buff_with_max(self, buff, remaining, max_value):
-        """Create or update a buff with a specific maximum value for the progress bar."""
+        """Create or update a buff with a specific maximum value
+        for the progress bar."""
         if buff in self.bars:
             # Update existing buff with new maximum
             self.bars[buff].progressBar.setMaximum(int(max_value))
@@ -134,10 +136,12 @@ class BuffBar(QWidget):
 
     def _update_existing_buff(self, buff, remaining):
         if self.bars[buff].expired:
-            self.bars[buff].reset(remaining)
-            self.logger.debug(
-                f"BuffBar reset buff bar for {buff} with remaining " f"time {remaining}"
-            )
+            if remaining > 0:
+                self.bars[buff].reset(remaining)
+                self.logger.debug(
+                    f"BuffBar reset buff bar for {buff} with remaining time {remaining}"
+                )
+            # else: Do nothing, keep expired full red bar
         else:
             self.bars[buff].progressBar.setValue(int(remaining))
             self.bars[buff].progressBar.setFormat(f"{round(remaining)} s")
