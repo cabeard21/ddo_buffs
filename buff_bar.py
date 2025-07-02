@@ -25,11 +25,11 @@ class BuffBar(QWidget):
     def _setup_logger(self):
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.DEBUG)
-        handler = logging.FileHandler(
-            os.path.join(self.data_dir, 'application.log'))
+        handler = logging.FileHandler(os.path.join(self.data_dir, "application.log"))
         handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
         handler.setFormatter(formatter)
         logger.addHandler(handler)
         return logger
@@ -41,8 +41,7 @@ class BuffBar(QWidget):
         self._set_window_properties()
 
     def _set_window_properties(self):
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool
-                            | Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
     def mousePressEvent(self, event):
@@ -61,23 +60,22 @@ class BuffBar(QWidget):
 
     def save_position(self):
         position = self.pos()
-        with open(os.path.join(self.data_dir, 'position.json'), 'w') as f:
-            json.dump({'x': position.x(), 'y': position.y()}, f)
+        with open(os.path.join(self.data_dir, "position.json"), "w") as f:
+            json.dump({"x": position.x(), "y": position.y()}, f)
 
     def load_position(self):
         try:
-            with open(os.path.join(self.data_dir, 'position.json'), 'r') as f:
+            with open(os.path.join(self.data_dir, "position.json"), "r") as f:
                 position = json.load(f)
-                self.move(position['x'], position['y'])
+                self.move(position["x"], position["y"])
         except FileNotFoundError:
             pass
 
     def update(self, buff, remaining):
         # Check if the buff is part of a stack
         stack_name = next(
-            (name
-             for name, buffs in self.stack_buffs.items() if buff in buffs),
-            None)
+            (name for name, buffs in self.stack_buffs.items() if buff in buffs), None
+        )
         if stack_name:
             # If another buff from the same stack is active, remove it
             for other_buff in self.stack_buffs[stack_name]:
@@ -96,19 +94,20 @@ class BuffBar(QWidget):
         if self.bars[buff].expired:
             self.bars[buff].reset(remaining)
             self.logger.debug(
-                f'BuffBar reset buff bar for {buff} with remaining '
-                f'time {remaining}')
+                f"BuffBar reset buff bar for {buff} with remaining " f"time {remaining}"
+            )
         else:
             self.bars[buff].progressBar.setValue(int(remaining))
-            self.bars[buff].progressBar.setFormat(f'{round(remaining)} s')
+            self.bars[buff].progressBar.setFormat(f"{round(remaining)} s")
 
     def _create_new_buff(self, buff, remaining):
         if remaining > 0:
             # Determine the icon path
             if buff in self.stack_buffs:
                 # Use the first buff in the stack as the default icon
-                icon_path = os.path.join(self.data_dir,
-                                         f'buffs/{self.stack_buffs[buff][0]}')
+                icon_path = os.path.join(
+                    self.data_dir, f"buffs/{self.stack_buffs[buff][0]}"
+                )
             else:
                 icon_path = None  # TimerWidget will use the default path
             buffBar = TimerWidget(buff, remaining, icon_path, self.data_dir)
@@ -116,8 +115,8 @@ class BuffBar(QWidget):
             self.layout.addWidget(buffBar)
             buffBar.cooldownStarted.connect(self.start_buff_cooldown)
             self.logger.debug(
-                f'Created new buff bar for {buff} with remaining '
-                f'time {remaining}')
+                f"Created new buff bar for {buff} with remaining " f"time {remaining}"
+            )
 
     def start_buff_cooldown(self, buff):
         cooldown_duration = self.cooldowns.get(buff, 0)
@@ -129,7 +128,7 @@ class BuffBar(QWidget):
             self.layout.removeWidget(self.bars[buff])
             self.bars[buff].deleteLater()
             del self.bars[buff]
-            self.logger.debug(f'Removed buff bar for {buff}')
+            self.logger.debug(f"Removed buff bar for {buff}")
 
     def reorder_bars(self, sorted_order):
         """
